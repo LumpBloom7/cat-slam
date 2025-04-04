@@ -4,4 +4,9 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <RootNamespace>NewGameProject</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <EditorConfgFiles Include=".editorconfig"/>
+    <EditorConfgFiles Include=".globalconfig"/>
+  </ItemGroup>
 </Project>
