@@ -31,6 +31,11 @@ public partial class RobotCharacter : CharacterBody3D
         prevRotation = newRotation = Rotation.Y;
     }
 
+    public void OnSignalReceived(float distance)
+    {
+        Console.WriteLine(distance);
+    }
+
     public override void _PhysicsProcess(double delta)
     {
         base._PhysicsProcess(delta);

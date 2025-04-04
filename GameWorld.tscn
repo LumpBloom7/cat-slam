@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=3 uid="uid://d282vhrhtytg6"]
+[gd_scene load_steps=29 format=3 uid="uid://d282vhrhtytg6"]
 
 [ext_resource type="Script" uid="uid://dd4xddwo2stq4" path="res://RobotCharacter.cs" id="1_3w644"]
 [ext_resource type="Texture2D" uid="uid://enxbhu6ttiee" path="res://Dino/idle0.png" id="1_ofih1"]
@@ -19,6 +19,7 @@
 [ext_resource type="Texture2D" uid="uid://f7c8qj3xjdl2" path="res://Dino/walk4.png" id="16_xju6n"]
 [ext_resource type="Texture2D" uid="uid://csbu0ilksqpqs" path="res://Dino/walk5.png" id="17_0vy7j"]
 [ext_resource type="Texture2D" uid="uid://63bn0gkeaec0" path="res://bigcap.png" id="19_3w644"]
+[ext_resource type="Script" uid="uid://cqnqswx0c8617" path="res://SimulatedLidar.cs" id="19_n6x7i"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_ofih1"]
 
@@ -125,11 +126,17 @@ floor_stop_on_slope = false
 script = ExtResource("1_3w644")
 AccelerationPerSecond = 2.0
 TimeUntilStop = 10.0
-RotationSpeedRadians = 10.0
+RotationSpeedRadians = 5.0
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CharacterBody3D"]
 transform = Transform3D(0.205, 0, 0, 0, 0.205, 0, 0, 0, 0.205, 0, 0, 5.96046e-08)
 shape = SubResource("SphereShape3D_ofih1")
+
+[node name="RayCast3D" type="RayCast3D" parent="CharacterBody3D/CollisionShape3D"]
+transform = Transform3D(4.87805, 0, 0, 0, 4.87805, 0, 0, 0, 4.87805, 0, 0.183747, -2.90805e-07)
+target_position = Vector3(0, 0, -5)
+script = ExtResource("19_n6x7i")
+PulseInterval = 0.5
 
 [node name="AnimatedSprite3D" type="AnimatedSprite3D" parent="CharacterBody3D"]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
@@ -141,15 +148,15 @@ autoplay = "default"
 transform = Transform3D(0.494534, -0.256249, 0.830526, 4.65603e-10, 0.955552, 0.294824, -0.869159, -0.145801, 0.472552, 0.720954, 0.216125, 0.402189)
 fov = 58.0727
 
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -0.0193196, 0.999813, 0, -0.999813, -0.0193196, 0, 0.77865, 0)
+
 [node name="AnimatedSprite3D" type="AnimatedSprite3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.478889, 0, 0)
 texture_filter = 4
 sprite_frames = SubResource("SpriteFrames_b2e5m")
 animation = &"hurt"
 autoplay = "hurt"
-
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -0.0193196, 0.999813, 0, -0.999813, -0.0193196, 0, 0.77865, 0)
 
 [node name="StaticBody3D" type="StaticBody3D" parent="."]
 transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, -0.0966123, 0)
@@ -178,3 +185,5 @@ shape = SubResource("BoxShape3D_4fmel")
 [node name="NorthWall" type="CollisionShape3D" parent="StaticBody3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1)
 shape = SubResource("BoxShape3D_4fmel")
+
+[connection signal="OnSurfaceDetected" from="CharacterBody3D/CollisionShape3D/RayCast3D" to="CharacterBody3D" method="OnSignalReceived"]
