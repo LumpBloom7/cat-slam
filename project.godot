@@ -10,10 +10,10 @@ config_version=5
 
 [application]
 
-config/name="New Game Project"
+config/name="Cat slam"
 run/main_scene="res://node_2d.tscn"
 config/features=PackedStringArray("4.4", "C#", "GL Compatibility")
-config/icon="res://icon.svg"
+config/icon="uid://g7o6oipmmi3v"
 
 [dotnet]
 
