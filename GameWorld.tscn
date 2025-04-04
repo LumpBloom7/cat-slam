@@ -1,0 +1,176 @@
+[gd_scene load_steps=28 format=3 uid="uid://d282vhrhtytg6"]
+
+[ext_resource type="Texture2D" uid="uid://enxbhu6ttiee" path="res://Dino/idle0.png" id="1_ofih1"]
+[ext_resource type="Script" uid="uid://ut4depn41d3" path="res://CharacterBody3d.cs" id="1_r0so7"]
+[ext_resource type="Texture2D" uid="uid://c23o3j4tdjhpr" path="res://Dino/idle1.png" id="2_r0so7"]
+[ext_resource type="Texture2D" uid="uid://u745yfwvknwm" path="res://Dino/idle2.png" id="3_3w644"]
+[ext_resource type="Texture2D" uid="uid://dfrqy0wskjn5h" path="res://Dino/idle3.png" id="4_n6x7i"]
+[ext_resource type="Texture2D" uid="uid://biqg6w37omuao" path="res://Dino/hurt0.png" id="5_4fmel"]
+[ext_resource type="Texture2D" uid="uid://bd0vf8vwr8iul" path="res://Dino/hurt1.png" id="6_qdxy3"]
+[ext_resource type="Texture2D" uid="uid://bkb031puupn7j" path="res://Dino/hurt2.png" id="7_mdqg0"]
+[ext_resource type="Texture2D" uid="uid://doujdwwobqpcl" path="res://Dino/hurt3.png" id="8_58bju"]
+[ext_resource type="Texture2D" uid="uid://ccm46y5rx7f8b" path="res://Dino/kick0.png" id="9_su3bq"]
+[ext_resource type="Texture2D" uid="uid://bx8o0jucrelvy" path="res://Dino/kick1.png" id="10_o0r38"]
+[ext_resource type="Texture2D" uid="uid://c0b3j5nolp24h" path="res://Dino/kick2.png" id="11_q2s1f"]
+[ext_resource type="Texture2D" uid="uid://bfwxxv0j7q17o" path="res://Dino/walk0.png" id="12_uk2by"]
+[ext_resource type="Texture2D" uid="uid://bdg5r37r6vlqh" path="res://Dino/walk1.png" id="13_28qeh"]
+[ext_resource type="Texture2D" uid="uid://720oa4483sfu" path="res://Dino/walk2.png" id="14_xhykl"]
+[ext_resource type="Texture2D" uid="uid://doccyt80sx54p" path="res://Dino/walk3.png" id="15_5wawc"]
+[ext_resource type="Texture2D" uid="uid://f7c8qj3xjdl2" path="res://Dino/walk4.png" id="16_xju6n"]
+[ext_resource type="Texture2D" uid="uid://csbu0ilksqpqs" path="res://Dino/walk5.png" id="17_0vy7j"]
+[ext_resource type="Texture2D" uid="uid://63bn0gkeaec0" path="res://bigcap.png" id="19_3w644"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_ofih1"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_b2e5m"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_ofih1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_r0so7")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_3w644")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_n6x7i")
+}],
+"loop": true,
+"name": &"default",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("5_4fmel")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_qdxy3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_mdqg0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_58bju")
+}],
+"loop": true,
+"name": &"hurt",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("9_su3bq")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_o0r38")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_q2s1f")
+}],
+"loop": true,
+"name": &"kick",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("12_uk2by")
+}, {
+"duration": 1.0,
+"texture": ExtResource("13_28qeh")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_xhykl")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_5wawc")
+}, {
+"duration": 1.0,
+"texture": ExtResource("16_xju6n")
+}, {
+"duration": 1.0,
+"texture": ExtResource("17_0vy7j")
+}],
+"loop": true,
+"name": &"walk",
+"speed": 5.0
+}]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3w644"]
+albedo_texture = ExtResource("19_3w644")
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_4fmel"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mdqg0"]
+shading_mode = 0
+heightmap_enabled = true
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_3w644"]
+margin = 0.0
+size = Vector3(2, 0.005, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_n6x7i"]
+margin = 0.0
+size = Vector3(0.005, 2, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_4fmel"]
+size = Vector3(2, 2, 0.005)
+
+[node name="Node3D" type="Node3D"]
+
+[node name="CharacterBody3D" type="CharacterBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.000326067, 0.000368506, -0.000310481)
+floor_stop_on_slope = false
+script = ExtResource("1_r0so7")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CharacterBody3D"]
+transform = Transform3D(0.205, 0, 0, 0, 0.205, 0, 0, 0, 0.205, 0, 0, 5.96046e-08)
+shape = SubResource("SphereShape3D_ofih1")
+
+[node name="AnimatedSprite3D" type="AnimatedSprite3D" parent="CharacterBody3D"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+texture_filter = 4
+sprite_frames = SubResource("SpriteFrames_b2e5m")
+autoplay = "default"
+
+[node name="Camera3D" type="Camera3D" parent="CharacterBody3D"]
+transform = Transform3D(0.494534, -0.256249, 0.830526, 4.65603e-10, 0.955552, 0.294824, -0.869159, -0.145801, 0.472552, 0.720954, 0.216125, 0.402189)
+fov = 58.0727
+
+[node name="AnimatedSprite3D" type="AnimatedSprite3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.478889, 0, 0)
+texture_filter = 4
+sprite_frames = SubResource("SpriteFrames_b2e5m")
+animation = &"hurt"
+autoplay = "hurt"
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -0.0193196, 0.999813, 0, -0.999813, -0.0193196, 0, 0.77865, 0)
+
+[node name="StaticBody3D" type="StaticBody3D" parent="."]
+transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, -0.0966123, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D"]
+material_override = SubResource("StandardMaterial3D_3w644")
+mesh = SubResource("PlaneMesh_4fmel")
+skeleton = NodePath("")
+surface_material_override/0 = SubResource("StandardMaterial3D_mdqg0")
+
+[node name="Floor" type="CollisionShape3D" parent="StaticBody3D"]
+shape = SubResource("BoxShape3D_3w644")
+
+[node name="EastWall" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
+shape = SubResource("BoxShape3D_n6x7i")
+
+[node name="WestWall" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0)
+shape = SubResource("BoxShape3D_n6x7i")
+
+[node name="SouthWall" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1)
+shape = SubResource("BoxShape3D_4fmel")
+
+[node name="NorthWall" type="CollisionShape3D" parent="StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1)
+shape = SubResource("BoxShape3D_4fmel")
