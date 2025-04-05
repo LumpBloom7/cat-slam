@@ -118,7 +118,6 @@ shader_parameter/wave_speed = 1.5
 [sub_resource type="PlaneMesh" id="PlaneMesh_q2s1f"]
 lightmap_size_hint = Vector2i(127, 127)
 material = SubResource("ShaderMaterial_o0r38")
-size = Vector2(25, 25)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_n6x7i"]
 margin = 0.0
