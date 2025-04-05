@@ -27,7 +27,7 @@ public partial class GridMap : Godot.GridMap
         {
             for (int z = -10; z <= 10; z++)
             {
-                Vector3I pos = new Vector3I(x, -3, z);
+                Vector3I pos = new Vector3I(x, -1, z);
                 SetCellItem(pos, sourceId);
             }
 

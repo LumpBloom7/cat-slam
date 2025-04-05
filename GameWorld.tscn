@@ -196,8 +196,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1)
 shape = SubResource("BoxShape3D_4fmel")
 
 [node name="GridMap" type="GridMap" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, -2, -1)
-visible = false
 mesh_library = ExtResource("20_qdxy3")
 script = ExtResource("21_mdqg0")
 
