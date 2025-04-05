@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3 uid="uid://b8ot6bi5g7kx1"]
+[gd_scene load_steps=24 format=3 uid="uid://b8ot6bi5g7kx1"]
 
 [ext_resource type="Texture2D" uid="uid://biqg6w37omuao" path="res://Dino/hurt0.png" id="1_flf07"]
 [ext_resource type="Texture2D" uid="uid://bd0vf8vwr8iul" path="res://Dino/hurt1.png" id="2_k73cj"]
@@ -17,7 +17,6 @@
 [ext_resource type="Texture2D" uid="uid://doccyt80sx54p" path="res://Dino/walk3.png" id="15_24dk6"]
 [ext_resource type="Texture2D" uid="uid://f7c8qj3xjdl2" path="res://Dino/walk4.png" id="16_mryly"]
 [ext_resource type="Texture2D" uid="uid://csbu0ilksqpqs" path="res://Dino/walk5.png" id="17_kq1c5"]
-[ext_resource type="Script" uid="uid://c0wcn6umspl5j" path="res://AnimatedSprite2d.cs" id="18_k73cj"]
 [ext_resource type="Texture2D" uid="uid://dv8s73nn827ha" path="res://assets/sprites/world_tileset.png" id="19_fs4d3"]
 [ext_resource type="Script" uid="uid://1wuycfxir3kk" path="res://TileMap.cs" id="20_7vxoj"]
 
@@ -236,9 +235,12 @@ texture_filter = 5
 sprite_frames = SubResource("SpriteFrames_flf07")
 autoplay = "default"
 frame_progress = 0.34051
-script = ExtResource("18_k73cj")
 
 [node name="TileMap" type="TileMap" parent="."]
+texture_filter = 5
 tile_set = SubResource("TileSet_e8dv2")
 format = 2
 script = ExtResource("20_7vxoj")
+
+[node name="Camera2D" type="Camera2D" parent="TileMap"]
+zoom = Vector2(4.93, 4.93)
