@@ -1,4 +1,4 @@
-[gd_scene load_steps=29 format=3 uid="uid://d282vhrhtytg6"]
+[gd_scene load_steps=32 format=3 uid="uid://cg4dlisrpp3dm"]
 
 [ext_resource type="Script" uid="uid://dd4xddwo2stq4" path="res://RobotCharacter.cs" id="1_3w644"]
 [ext_resource type="Texture2D" uid="uid://enxbhu6ttiee" path="res://Dino/idle0.png" id="1_ofih1"]
@@ -18,8 +18,10 @@
 [ext_resource type="Texture2D" uid="uid://doccyt80sx54p" path="res://Dino/walk3.png" id="15_5wawc"]
 [ext_resource type="Texture2D" uid="uid://f7c8qj3xjdl2" path="res://Dino/walk4.png" id="16_xju6n"]
 [ext_resource type="Texture2D" uid="uid://csbu0ilksqpqs" path="res://Dino/walk5.png" id="17_0vy7j"]
-[ext_resource type="Texture2D" uid="uid://63bn0gkeaec0" path="res://bigcap.png" id="19_3w644"]
+[ext_resource type="Shader" uid="uid://dtwhoplmqoos" path="res://assets/water.gdshader" id="19_4fmel"]
 [ext_resource type="Script" uid="uid://cqnqswx0c8617" path="res://SimulatedLidar.cs" id="19_n6x7i"]
+[ext_resource type="MeshLibrary" uid="uid://d0v4s2kqpnxbu" path="res://assets/tiles.tres" id="20_qdxy3"]
+[ext_resource type="Script" uid="uid://ddb67it18gbyi" path="res://GridMap.cs" id="21_mdqg0"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_ofih1"]
 
@@ -97,15 +99,29 @@ animations = [{
 "speed": 5.0
 }]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3w644"]
-albedo_texture = ExtResource("19_3w644")
+[sub_resource type="CanvasTexture" id="CanvasTexture_58bju"]
 
-[sub_resource type="PlaneMesh" id="PlaneMesh_4fmel"]
+[sub_resource type="ORMMaterial3D" id="ORMMaterial3D_su3bq"]
+albedo_color = Color(1, 1, 1, 0)
+albedo_texture = SubResource("CanvasTexture_58bju")
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_mdqg0"]
-shading_mode = 0
-heightmap_enabled = true
-heightmap_texture = ExtResource("19_3w644")
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_o0r38"]
+render_priority = 0
+next_pass = SubResource("ORMMaterial3D_su3bq")
+shader = ExtResource("19_4fmel")
+shader_parameter/WATER_COL = Color(0.04, 0.38, 0.88, 1)
+shader_parameter/WATER2_COL = Color(0.04, 0.35, 0.78, 1)
+shader_parameter/FOAM_COL = Color(0.8125, 0.9609, 0.9648, 1)
+shader_parameter/distortion_speed = 2.0
+shader_parameter/tile = Vector2(5, 5)
+shader_parameter/height = 2.0
+shader_parameter/wave_size = Vector2(2, 2)
+shader_parameter/wave_speed = 1.5
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_q2s1f"]
+lightmap_size_hint = Vector2i(127, 127)
+material = SubResource("ShaderMaterial_o0r38")
+size = Vector2(25, 25)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_3w644"]
 margin = 0.0
@@ -145,8 +161,10 @@ sprite_frames = SubResource("SpriteFrames_b2e5m")
 autoplay = "default"
 
 [node name="Camera3D" type="Camera3D" parent="CharacterBody3D"]
-transform = Transform3D(0.494534, -0.256249, 0.830526, 4.65603e-10, 0.955552, 0.294824, -0.869159, -0.145801, 0.472552, 0.720954, 0.216125, 0.402189)
-fov = 58.0727
+transform = Transform3D(0.494534, -0.256249, 0.830526, 4.65603e-10, 0.955552, 0.294824, -0.869159, -0.145801, 0.472552, 1.721, 0.216, 0.402)
+v_offset = 1.0
+fov = 103.0
+near = 0.105
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -0.0193196, 0.999813, 0, -0.999813, -0.0193196, 0, 0.77865, 0)
@@ -159,13 +177,12 @@ animation = &"hurt"
 autoplay = "hurt"
 
 [node name="StaticBody3D" type="StaticBody3D" parent="."]
-transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, -0.0966123, 0)
+transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, -2.04607, 0)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D"]
-material_override = SubResource("StandardMaterial3D_3w644")
-mesh = SubResource("PlaneMesh_4fmel")
-skeleton = NodePath("")
-surface_material_override/0 = SubResource("StandardMaterial3D_mdqg0")
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="StaticBody3D"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)
+mesh = SubResource("PlaneMesh_q2s1f")
+skeleton = NodePath("../..")
 
 [node name="Floor" type="CollisionShape3D" parent="StaticBody3D"]
 shape = SubResource("BoxShape3D_3w644")
@@ -185,5 +202,10 @@ shape = SubResource("BoxShape3D_4fmel")
 [node name="NorthWall" type="CollisionShape3D" parent="StaticBody3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1)
 shape = SubResource("BoxShape3D_4fmel")
+
+[node name="GridMap" type="GridMap" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, -2, -1)
+mesh_library = ExtResource("20_qdxy3")
+script = ExtResource("21_mdqg0")
 
 [connection signal="OnSurfaceDetected" from="CharacterBody3D/CollisionShape3D/RayCast3D" to="CharacterBody3D" method="OnSignalReceived"]
