@@ -184,7 +184,6 @@ void vertex() {
 
     // Apply a more moderate height displacement for the vertex
     VERTEX.y += dist.y * 0.1; // Reduce displacement for smoother waves
-	
 }
 
 void fragment() {

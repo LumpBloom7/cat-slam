@@ -1,4 +1,4 @@
-[gd_scene load_steps=32 format=3 uid="uid://cg4dlisrpp3dm"]
+[gd_scene load_steps=30 format=3 uid="uid://cg4dlisrpp3dm"]
 
 [ext_resource type="Script" uid="uid://dd4xddwo2stq4" path="res://RobotCharacter.cs" id="1_3w644"]
 [ext_resource type="Texture2D" uid="uid://enxbhu6ttiee" path="res://Dino/idle0.png" id="1_ofih1"]
@@ -99,21 +99,18 @@ animations = [{
 "speed": 5.0
 }]
 
-[sub_resource type="CanvasTexture" id="CanvasTexture_58bju"]
-
-[sub_resource type="ORMMaterial3D" id="ORMMaterial3D_su3bq"]
-albedo_color = Color(1, 1, 1, 0)
-albedo_texture = SubResource("CanvasTexture_58bju")
+[sub_resource type="BoxShape3D" id="BoxShape3D_3w644"]
+margin = 0.0
+size = Vector3(2, 0.005, 2)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_o0r38"]
 render_priority = 0
-next_pass = SubResource("ORMMaterial3D_su3bq")
 shader = ExtResource("19_4fmel")
 shader_parameter/WATER_COL = Color(0.04, 0.38, 0.88, 1)
 shader_parameter/WATER2_COL = Color(0.04, 0.35, 0.78, 1)
 shader_parameter/FOAM_COL = Color(0.8125, 0.9609, 0.9648, 1)
 shader_parameter/distortion_speed = 2.0
-shader_parameter/tile = Vector2(5, 5)
+shader_parameter/tile = Vector2(25, 25)
 shader_parameter/height = 2.0
 shader_parameter/wave_size = Vector2(2, 2)
 shader_parameter/wave_speed = 1.5
@@ -122,10 +119,6 @@ shader_parameter/wave_speed = 1.5
 lightmap_size_hint = Vector2i(127, 127)
 material = SubResource("ShaderMaterial_o0r38")
 size = Vector2(25, 25)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_3w644"]
-margin = 0.0
-size = Vector3(2, 0.005, 2)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_n6x7i"]
 margin = 0.0
@@ -177,15 +170,15 @@ animation = &"hurt"
 autoplay = "hurt"
 
 [node name="StaticBody3D" type="StaticBody3D" parent="."]
-transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, -2.04607, 0)
-
-[node name="MeshInstance3D2" type="MeshInstance3D" parent="StaticBody3D"]
-transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)
-mesh = SubResource("PlaneMesh_q2s1f")
-skeleton = NodePath("../..")
+transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, 0, -0.221814, 0)
 
 [node name="Floor" type="CollisionShape3D" parent="StaticBody3D"]
 shape = SubResource("BoxShape3D_3w644")
+debug_color = Color(0.94508, 5.77569e-06, 0.594116, 0.42)
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="StaticBody3D"]
+cast_shadow = 0
+mesh = SubResource("PlaneMesh_q2s1f")
 
 [node name="EastWall" type="CollisionShape3D" parent="StaticBody3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 0, 0)
@@ -205,6 +198,7 @@ shape = SubResource("BoxShape3D_4fmel")
 
 [node name="GridMap" type="GridMap" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, -2, -1)
+visible = false
 mesh_library = ExtResource("20_qdxy3")
 script = ExtResource("21_mdqg0")
 
