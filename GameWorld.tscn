@@ -153,159 +153,160 @@ v_offset = 1.0
 fov = 103.0
 near = 0.105
 
-[node name="Node3D" type="Node3D" parent="CharacterBody3D"]
+[node name="SensorArray" type="Node3D" parent="CharacterBody3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.045, 0)
+visible = false
 
-[node name="RCast0" type="RayCast3D" parent="CharacterBody3D/Node3D"]
+[node name="RCast0" type="RayCast3D" parent="CharacterBody3D/SensorArray"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
 script = ExtResource("19_n6x7i")
 PulseInterval = 0.5
 
-[node name="Label3D" type="Label3D" parent="CharacterBody3D/Node3D/RCast0"]
+[node name="Label3D" type="Label3D" parent="CharacterBody3D/SensorArray/RCast0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
 billboard = 1
 text = "0.00"
 font_size = 16
 script = ExtResource("4_su3bq")
 
-[node name="RCast1" type="RayCast3D" parent="CharacterBody3D/Node3D"]
+[node name="RCast1" type="RayCast3D" parent="CharacterBody3D/SensorArray"]
 transform = Transform3D(0.866026, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866026, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
 script = ExtResource("19_n6x7i")
 PulseInterval = 0.5
 
-[node name="Label3D" type="Label3D" parent="CharacterBody3D/Node3D/RCast1"]
+[node name="Label3D" type="Label3D" parent="CharacterBody3D/SensorArray/RCast1"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
 billboard = 1
 text = "0.00"
 font_size = 16
 script = ExtResource("4_su3bq")
 
-[node name="RCast2" type="RayCast3D" parent="CharacterBody3D/Node3D"]
+[node name="RCast2" type="RayCast3D" parent="CharacterBody3D/SensorArray"]
 transform = Transform3D(0.5, 0, 0.866026, 0, 1, 0, -0.866026, 0, 0.5, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
 script = ExtResource("19_n6x7i")
 PulseInterval = 0.5
 
-[node name="Label3D" type="Label3D" parent="CharacterBody3D/Node3D/RCast2"]
+[node name="Label3D" type="Label3D" parent="CharacterBody3D/SensorArray/RCast2"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
 billboard = 1
 text = "0.00"
 font_size = 16
 script = ExtResource("4_su3bq")
 
-[node name="RCast3" type="RayCast3D" parent="CharacterBody3D/Node3D"]
+[node name="RCast3" type="RayCast3D" parent="CharacterBody3D/SensorArray"]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
 script = ExtResource("19_n6x7i")
 PulseInterval = 0.5
 
-[node name="Label3D" type="Label3D" parent="CharacterBody3D/Node3D/RCast3"]
+[node name="Label3D" type="Label3D" parent="CharacterBody3D/SensorArray/RCast3"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
 billboard = 1
 text = "0.00"
 font_size = 16
 script = ExtResource("4_su3bq")
 
-[node name="RCast4" type="RayCast3D" parent="CharacterBody3D/Node3D"]
+[node name="RCast4" type="RayCast3D" parent="CharacterBody3D/SensorArray"]
 transform = Transform3D(-0.5, 0, 0.866026, 0, 1, 0, -0.866026, 0, -0.5, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
 script = ExtResource("19_n6x7i")
 PulseInterval = 0.5
 
-[node name="Label3D" type="Label3D" parent="CharacterBody3D/Node3D/RCast4"]
+[node name="Label3D" type="Label3D" parent="CharacterBody3D/SensorArray/RCast4"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
 billboard = 1
 text = "0.00"
 font_size = 16
 script = ExtResource("4_su3bq")
 
-[node name="RCast5" type="RayCast3D" parent="CharacterBody3D/Node3D"]
+[node name="RCast5" type="RayCast3D" parent="CharacterBody3D/SensorArray"]
 transform = Transform3D(-0.866026, 0, 0.5, 0, 1, 0, -0.5, 0, -0.866026, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
 script = ExtResource("19_n6x7i")
 PulseInterval = 0.5
 
-[node name="Label3D" type="Label3D" parent="CharacterBody3D/Node3D/RCast5"]
+[node name="Label3D" type="Label3D" parent="CharacterBody3D/SensorArray/RCast5"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
 billboard = 1
 text = "0.00"
 font_size = 16
 script = ExtResource("4_su3bq")
 
-[node name="RCast6" type="RayCast3D" parent="CharacterBody3D/Node3D"]
+[node name="RCast6" type="RayCast3D" parent="CharacterBody3D/SensorArray"]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
 script = ExtResource("19_n6x7i")
 PulseInterval = 0.5
 
-[node name="Label3D" type="Label3D" parent="CharacterBody3D/Node3D/RCast6"]
+[node name="Label3D" type="Label3D" parent="CharacterBody3D/SensorArray/RCast6"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
 billboard = 1
 text = "0.00"
 font_size = 16
 script = ExtResource("4_su3bq")
 
-[node name="RCast7" type="RayCast3D" parent="CharacterBody3D/Node3D"]
+[node name="RCast7" type="RayCast3D" parent="CharacterBody3D/SensorArray"]
 transform = Transform3D(-0.866026, 0, -0.5, 0, 1, 0, 0.5, 0, -0.866026, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
 script = ExtResource("19_n6x7i")
 PulseInterval = 0.5
 
-[node name="Label3D" type="Label3D" parent="CharacterBody3D/Node3D/RCast7"]
+[node name="Label3D" type="Label3D" parent="CharacterBody3D/SensorArray/RCast7"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
 billboard = 1
 text = "0.00"
 font_size = 16
 script = ExtResource("4_su3bq")
 
-[node name="RCast8" type="RayCast3D" parent="CharacterBody3D/Node3D"]
+[node name="RCast8" type="RayCast3D" parent="CharacterBody3D/SensorArray"]
 transform = Transform3D(-0.5, 0, -0.866026, 0, 1, 0, 0.866026, 0, -0.5, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
 script = ExtResource("19_n6x7i")
 PulseInterval = 0.5
 
-[node name="Label3D" type="Label3D" parent="CharacterBody3D/Node3D/RCast8"]
+[node name="Label3D" type="Label3D" parent="CharacterBody3D/SensorArray/RCast8"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
 billboard = 1
 text = "0.00"
 font_size = 16
 script = ExtResource("4_su3bq")
 
-[node name="RCast9" type="RayCast3D" parent="CharacterBody3D/Node3D"]
+[node name="RCast9" type="RayCast3D" parent="CharacterBody3D/SensorArray"]
 transform = Transform3D(1.19249e-08, 0, -1, 0, 1, 0, 1, 0, 1.19249e-08, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
 script = ExtResource("19_n6x7i")
 PulseInterval = 0.5
 
-[node name="Label3D" type="Label3D" parent="CharacterBody3D/Node3D/RCast9"]
+[node name="Label3D" type="Label3D" parent="CharacterBody3D/SensorArray/RCast9"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
 billboard = 1
 text = "0.00"
 font_size = 16
 script = ExtResource("4_su3bq")
 
-[node name="RCast10" type="RayCast3D" parent="CharacterBody3D/Node3D"]
+[node name="RCast10" type="RayCast3D" parent="CharacterBody3D/SensorArray"]
 transform = Transform3D(0.5, 0, -0.866026, 0, 1, 0, 0.866026, 0, 0.5, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
 script = ExtResource("19_n6x7i")
 PulseInterval = 0.5
 
-[node name="Label3D" type="Label3D" parent="CharacterBody3D/Node3D/RCast10"]
+[node name="Label3D" type="Label3D" parent="CharacterBody3D/SensorArray/RCast10"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
 billboard = 1
 text = "0.00"
 font_size = 16
 script = ExtResource("4_su3bq")
 
-[node name="RCast11" type="RayCast3D" parent="CharacterBody3D/Node3D"]
+[node name="RCast11" type="RayCast3D" parent="CharacterBody3D/SensorArray"]
 transform = Transform3D(0.866026, 0, -0.5, 0, 1, 0, 0.5, 0, 0.866026, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
 script = ExtResource("19_n6x7i")
 PulseInterval = 0.5
 
-[node name="Label3D" type="Label3D" parent="CharacterBody3D/Node3D/RCast11"]
+[node name="Label3D" type="Label3D" parent="CharacterBody3D/SensorArray/RCast11"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
 billboard = 1
 text = "0.00"
@@ -354,15 +355,15 @@ mesh_library = ExtResource("20_qdxy3")
 script = ExtResource("21_mdqg0")
 metadata/_editor_floor_ = Vector3(0, -1, 0)
 
-[connection signal="OnSurfaceDetected" from="CharacterBody3D/Node3D/RCast0" to="CharacterBody3D/Node3D/RCast0/Label3D" method="OnSignalReceived"]
-[connection signal="OnSurfaceDetected" from="CharacterBody3D/Node3D/RCast1" to="CharacterBody3D/Node3D/RCast1/Label3D" method="OnSignalReceived"]
-[connection signal="OnSurfaceDetected" from="CharacterBody3D/Node3D/RCast2" to="CharacterBody3D/Node3D/RCast2/Label3D" method="OnSignalReceived"]
-[connection signal="OnSurfaceDetected" from="CharacterBody3D/Node3D/RCast3" to="CharacterBody3D/Node3D/RCast3/Label3D" method="OnSignalReceived"]
-[connection signal="OnSurfaceDetected" from="CharacterBody3D/Node3D/RCast4" to="CharacterBody3D/Node3D/RCast4/Label3D" method="OnSignalReceived"]
-[connection signal="OnSurfaceDetected" from="CharacterBody3D/Node3D/RCast5" to="CharacterBody3D/Node3D/RCast5/Label3D" method="OnSignalReceived"]
-[connection signal="OnSurfaceDetected" from="CharacterBody3D/Node3D/RCast6" to="CharacterBody3D/Node3D/RCast6/Label3D" method="OnSignalReceived"]
-[connection signal="OnSurfaceDetected" from="CharacterBody3D/Node3D/RCast7" to="CharacterBody3D/Node3D/RCast7/Label3D" method="OnSignalReceived"]
-[connection signal="OnSurfaceDetected" from="CharacterBody3D/Node3D/RCast8" to="CharacterBody3D/Node3D/RCast8/Label3D" method="OnSignalReceived"]
-[connection signal="OnSurfaceDetected" from="CharacterBody3D/Node3D/RCast9" to="CharacterBody3D/Node3D/RCast9/Label3D" method="OnSignalReceived"]
-[connection signal="OnSurfaceDetected" from="CharacterBody3D/Node3D/RCast10" to="CharacterBody3D/Node3D/RCast10/Label3D" method="OnSignalReceived"]
-[connection signal="OnSurfaceDetected" from="CharacterBody3D/Node3D/RCast11" to="CharacterBody3D/Node3D/RCast11/Label3D" method="OnSignalReceived"]
+[connection signal="OnSurfaceDetected" from="CharacterBody3D/SensorArray/RCast0" to="CharacterBody3D/SensorArray/RCast0/Label3D" method="OnSignalReceived"]
+[connection signal="OnSurfaceDetected" from="CharacterBody3D/SensorArray/RCast1" to="CharacterBody3D/SensorArray/RCast1/Label3D" method="OnSignalReceived"]
+[connection signal="OnSurfaceDetected" from="CharacterBody3D/SensorArray/RCast2" to="CharacterBody3D/SensorArray/RCast2/Label3D" method="OnSignalReceived"]
+[connection signal="OnSurfaceDetected" from="CharacterBody3D/SensorArray/RCast3" to="CharacterBody3D/SensorArray/RCast3/Label3D" method="OnSignalReceived"]
+[connection signal="OnSurfaceDetected" from="CharacterBody3D/SensorArray/RCast4" to="CharacterBody3D/SensorArray/RCast4/Label3D" method="OnSignalReceived"]
+[connection signal="OnSurfaceDetected" from="CharacterBody3D/SensorArray/RCast5" to="CharacterBody3D/SensorArray/RCast5/Label3D" method="OnSignalReceived"]
+[connection signal="OnSurfaceDetected" from="CharacterBody3D/SensorArray/RCast6" to="CharacterBody3D/SensorArray/RCast6/Label3D" method="OnSignalReceived"]
+[connection signal="OnSurfaceDetected" from="CharacterBody3D/SensorArray/RCast7" to="CharacterBody3D/SensorArray/RCast7/Label3D" method="OnSignalReceived"]
+[connection signal="OnSurfaceDetected" from="CharacterBody3D/SensorArray/RCast8" to="CharacterBody3D/SensorArray/RCast8/Label3D" method="OnSignalReceived"]
+[connection signal="OnSurfaceDetected" from="CharacterBody3D/SensorArray/RCast9" to="CharacterBody3D/SensorArray/RCast9/Label3D" method="OnSignalReceived"]
+[connection signal="OnSurfaceDetected" from="CharacterBody3D/SensorArray/RCast10" to="CharacterBody3D/SensorArray/RCast10/Label3D" method="OnSignalReceived"]
+[connection signal="OnSurfaceDetected" from="CharacterBody3D/SensorArray/RCast11" to="CharacterBody3D/SensorArray/RCast11/Label3D" method="OnSignalReceived"]
