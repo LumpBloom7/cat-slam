@@ -336,6 +336,7 @@ skeleton = NodePath("")
 
 [node name="GridMap" type="GridMap" parent="."]
 mesh_library = ExtResource("11_waypw")
+cell_size = Vector3(1, 1, 1)
 script = ExtResource("12_waypw")
 metadata/_editor_floor_ = Vector3(0, -1, 0)
 
@@ -345,7 +346,6 @@ mesh_library = ExtResource("9_c1plj")
 cell_size = Vector3(0.3, 0.1, 0.3)
 
 [node name="ProbMap" type="GridMap" parent="."]
-visible = false
 mesh_library = SubResource("MeshLibrary_c1plj")
 cell_size = Vector3(0.25, 0.25, 0.25)
 
