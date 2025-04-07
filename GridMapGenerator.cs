@@ -1,35 +1,25 @@
 using System;
 using Godot;
-public partial class GridMap : Godot.GridMap
+public partial class GridMapGenerator : GridMap
 {
-
-    private int mapWidth;
-
-    private int mapHeight;
-    private Tile[][]? bitmap;
-
-
-
-    public GridMap() //Tiles is out matrix with tiles (has rows and columns, row is an array)
-    {
-
-    }
     public override void _Ready()
     {
         WaveFunctionCollapse wave = new WaveFunctionCollapse(3, 3);
-        bitmap = wave.Generate(); //z,x
-        if (bitmap is null)
-        {
-            Console.WriteLine("Failed to generate a solution.");
-            return;
-        }
-        mapHeight = bitmap.Length;
-        mapWidth = bitmap[0].Length;
-        GenerateMap();
+        var bitmap = wave.Generate(); //z,x
+        GenerateMap(bitmap);
     }
 
-    private void GenerateMap()
+    private void GenerateMap(Tile[][]? bitmap)
     {
+        if (bitmap is null)
+        {
+            Console.WriteLine("Failed to generate a map.");
+            return;
+        }
+
+        int mapHeight = bitmap.Length;
+        int mapWidth = bitmap[0].Length;
+
         GD.Print(mapHeight, mapWidth);
         var offset = new Vector3I(mapHeight / 2, 0, mapWidth / 2);
         for (int x = 0; x < mapHeight; x++)
