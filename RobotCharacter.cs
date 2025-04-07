@@ -19,6 +19,12 @@ public partial class RobotCharacter : CharacterBody3D
     private float leftVel = 0;
     private float rightVel = 0;
 
+    [Signal]
+    public delegate void LeftMotorValueChangedEventHandler(float velocity);
+
+    [Signal]
+    public delegate void RightMotorValueChangedEventHandler(float velocity);
+
     public override void _PhysicsProcess(double delta)
     {
         // Compute acceleration amounts
@@ -45,8 +51,10 @@ public partial class RobotCharacter : CharacterBody3D
         else
             rightVel = Math.Clamp(rightAcc + rightVel, -MaxSpeed, MaxSpeed);
 
-        float rotAmount = (rightVel - leftVel) / (Radius * 2);
+        EmitSignal(SignalName.LeftMotorValueChanged, leftVel);
+        EmitSignal(SignalName.RightMotorValueChanged, rightVel);
 
+        float rotAmount = (rightVel - leftVel) / (Radius * 2);
 
         Console.WriteLine(AccelerationPerSecond);
         Console.WriteLine(leftAcc);
