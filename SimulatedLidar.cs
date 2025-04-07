@@ -26,8 +26,10 @@ public partial class SimulatedLidar : RayCast3D
         timeSinceLastPulse = 0;
 
         if (!IsColliding())
+        {
+            EmitSignal(SignalName.OnSurfaceDetected, 0);
             return;
-
+        }
         var point = GetCollisionPoint();
 
         float distance = GlobalPosition.DistanceTo(point);

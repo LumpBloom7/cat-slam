@@ -1,10 +1,12 @@
-[gd_scene load_steps=30 format=3 uid="uid://cg4dlisrpp3dm"]
+[gd_scene load_steps=32 format=3 uid="uid://cg4dlisrpp3dm"]
 
 [ext_resource type="Script" uid="uid://dd4xddwo2stq4" path="res://RobotCharacter.cs" id="1_3w644"]
 [ext_resource type="Texture2D" uid="uid://enxbhu6ttiee" path="res://Dino/idle0.png" id="1_ofih1"]
+[ext_resource type="PackedScene" uid="uid://wl31x5pq0c2u" path="res://assets/Robot/scene.gltf" id="2_58bju"]
 [ext_resource type="Texture2D" uid="uid://c23o3j4tdjhpr" path="res://Dino/idle1.png" id="2_r0so7"]
 [ext_resource type="Texture2D" uid="uid://u745yfwvknwm" path="res://Dino/idle2.png" id="3_3w644"]
 [ext_resource type="Texture2D" uid="uid://dfrqy0wskjn5h" path="res://Dino/idle3.png" id="4_n6x7i"]
+[ext_resource type="Script" uid="uid://ctm70wi0h082n" path="res://DistanceLabel.cs" id="4_su3bq"]
 [ext_resource type="Texture2D" uid="uid://biqg6w37omuao" path="res://Dino/hurt0.png" id="5_4fmel"]
 [ext_resource type="Texture2D" uid="uid://bd0vf8vwr8iul" path="res://Dino/hurt1.png" id="6_qdxy3"]
 [ext_resource type="Texture2D" uid="uid://bkb031puupn7j" path="res://Dino/hurt2.png" id="7_mdqg0"]
@@ -23,7 +25,9 @@
 [ext_resource type="MeshLibrary" uid="uid://d0v4s2kqpnxbu" path="res://assets/tiles.tres" id="20_qdxy3"]
 [ext_resource type="Script" uid="uid://ddb67it18gbyi" path="res://GridMap.cs" id="21_mdqg0"]
 
-[sub_resource type="SphereShape3D" id="SphereShape3D_ofih1"]
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_o0r38"]
+height = 0.07
+radius = 0.150879
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_b2e5m"]
 animations = [{
@@ -129,34 +133,184 @@ size = Vector3(2, 2, 0.005)
 [node name="Node3D" type="Node3D"]
 
 [node name="CharacterBody3D" type="CharacterBody3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.000326067, 0.000368506, -0.000310481)
 floor_stop_on_slope = false
 script = ExtResource("1_3w644")
 AccelerationPerSecond = 2.0
 TimeUntilStop = 10.0
 RotationSpeedRadians = 5.0
+MaxSpeed = 5.0
+
+[node name="Sketchfab_Scene" parent="CharacterBody3D" instance=ExtResource("2_58bju")]
+transform = Transform3D(-1, 0, -1.50996e-07, 0, 1, 0, 1.50996e-07, 0, -1, 0, 0, 0)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="CharacterBody3D"]
-transform = Transform3D(0.205, 0, 0, 0, 0.205, 0, 0, 0, 0.205, 0, 0, 5.96046e-08)
-shape = SubResource("SphereShape3D_ofih1")
-
-[node name="RayCast3D" type="RayCast3D" parent="CharacterBody3D/CollisionShape3D"]
-transform = Transform3D(4.87805, 0, 0, 0, 4.87805, 0, 0, 0, 4.87805, 0, 0.183747, -2.90805e-07)
-target_position = Vector3(0, 0, -5)
-script = ExtResource("19_n6x7i")
-PulseInterval = 0.5
-
-[node name="AnimatedSprite3D" type="AnimatedSprite3D" parent="CharacterBody3D"]
-transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
-texture_filter = 4
-sprite_frames = SubResource("SpriteFrames_b2e5m")
-autoplay = "default"
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0430663, 0)
+shape = SubResource("CylinderShape3D_o0r38")
 
 [node name="Camera3D" type="Camera3D" parent="CharacterBody3D"]
-transform = Transform3D(0.494534, -0.256249, 0.830526, 4.65603e-10, 0.955552, 0.294824, -0.869159, -0.145801, 0.472552, 1.721, 0.216, 0.402)
+transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 0.75, 1)
 v_offset = 1.0
 fov = 103.0
 near = 0.105
+
+[node name="Node3D" type="Node3D" parent="CharacterBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.045, 0)
+
+[node name="RCast0" type="RayCast3D" parent="CharacterBody3D/Node3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
+target_position = Vector3(0, 0, -100)
+script = ExtResource("19_n6x7i")
+PulseInterval = 0.5
+
+[node name="Label3D" type="Label3D" parent="CharacterBody3D/Node3D/RCast0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
+billboard = 1
+text = "0.00"
+font_size = 16
+script = ExtResource("4_su3bq")
+
+[node name="RCast1" type="RayCast3D" parent="CharacterBody3D/Node3D"]
+transform = Transform3D(0.866026, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866026, 0, 0, 0)
+target_position = Vector3(0, 0, -100)
+script = ExtResource("19_n6x7i")
+PulseInterval = 0.5
+
+[node name="Label3D" type="Label3D" parent="CharacterBody3D/Node3D/RCast1"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
+billboard = 1
+text = "0.00"
+font_size = 16
+script = ExtResource("4_su3bq")
+
+[node name="RCast2" type="RayCast3D" parent="CharacterBody3D/Node3D"]
+transform = Transform3D(0.5, 0, 0.866026, 0, 1, 0, -0.866026, 0, 0.5, 0, 0, 0)
+target_position = Vector3(0, 0, -100)
+script = ExtResource("19_n6x7i")
+PulseInterval = 0.5
+
+[node name="Label3D" type="Label3D" parent="CharacterBody3D/Node3D/RCast2"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
+billboard = 1
+text = "0.00"
+font_size = 16
+script = ExtResource("4_su3bq")
+
+[node name="RCast3" type="RayCast3D" parent="CharacterBody3D/Node3D"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
+target_position = Vector3(0, 0, -100)
+script = ExtResource("19_n6x7i")
+PulseInterval = 0.5
+
+[node name="Label3D" type="Label3D" parent="CharacterBody3D/Node3D/RCast3"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
+billboard = 1
+text = "0.00"
+font_size = 16
+script = ExtResource("4_su3bq")
+
+[node name="RCast4" type="RayCast3D" parent="CharacterBody3D/Node3D"]
+transform = Transform3D(-0.5, 0, 0.866026, 0, 1, 0, -0.866026, 0, -0.5, 0, 0, 0)
+target_position = Vector3(0, 0, -100)
+script = ExtResource("19_n6x7i")
+PulseInterval = 0.5
+
+[node name="Label3D" type="Label3D" parent="CharacterBody3D/Node3D/RCast4"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
+billboard = 1
+text = "0.00"
+font_size = 16
+script = ExtResource("4_su3bq")
+
+[node name="RCast5" type="RayCast3D" parent="CharacterBody3D/Node3D"]
+transform = Transform3D(-0.866026, 0, 0.5, 0, 1, 0, -0.5, 0, -0.866026, 0, 0, 0)
+target_position = Vector3(0, 0, -100)
+script = ExtResource("19_n6x7i")
+PulseInterval = 0.5
+
+[node name="Label3D" type="Label3D" parent="CharacterBody3D/Node3D/RCast5"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
+billboard = 1
+text = "0.00"
+font_size = 16
+script = ExtResource("4_su3bq")
+
+[node name="RCast6" type="RayCast3D" parent="CharacterBody3D/Node3D"]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
+target_position = Vector3(0, 0, -100)
+script = ExtResource("19_n6x7i")
+PulseInterval = 0.5
+
+[node name="Label3D" type="Label3D" parent="CharacterBody3D/Node3D/RCast6"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
+billboard = 1
+text = "0.00"
+font_size = 16
+script = ExtResource("4_su3bq")
+
+[node name="RCast7" type="RayCast3D" parent="CharacterBody3D/Node3D"]
+transform = Transform3D(-0.866026, 0, -0.5, 0, 1, 0, 0.5, 0, -0.866026, 0, 0, 0)
+target_position = Vector3(0, 0, -100)
+script = ExtResource("19_n6x7i")
+PulseInterval = 0.5
+
+[node name="Label3D" type="Label3D" parent="CharacterBody3D/Node3D/RCast7"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
+billboard = 1
+text = "0.00"
+font_size = 16
+script = ExtResource("4_su3bq")
+
+[node name="RCast8" type="RayCast3D" parent="CharacterBody3D/Node3D"]
+transform = Transform3D(-0.5, 0, -0.866026, 0, 1, 0, 0.866026, 0, -0.5, 0, 0, 0)
+target_position = Vector3(0, 0, -100)
+script = ExtResource("19_n6x7i")
+PulseInterval = 0.5
+
+[node name="Label3D" type="Label3D" parent="CharacterBody3D/Node3D/RCast8"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
+billboard = 1
+text = "0.00"
+font_size = 16
+script = ExtResource("4_su3bq")
+
+[node name="RCast9" type="RayCast3D" parent="CharacterBody3D/Node3D"]
+transform = Transform3D(1.19249e-08, 0, -1, 0, 1, 0, 1, 0, 1.19249e-08, 0, 0, 0)
+target_position = Vector3(0, 0, -100)
+script = ExtResource("19_n6x7i")
+PulseInterval = 0.5
+
+[node name="Label3D" type="Label3D" parent="CharacterBody3D/Node3D/RCast9"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
+billboard = 1
+text = "0.00"
+font_size = 16
+script = ExtResource("4_su3bq")
+
+[node name="RCast10" type="RayCast3D" parent="CharacterBody3D/Node3D"]
+transform = Transform3D(0.5, 0, -0.866026, 0, 1, 0, 0.866026, 0, 0.5, 0, 0, 0)
+target_position = Vector3(0, 0, -100)
+script = ExtResource("19_n6x7i")
+PulseInterval = 0.5
+
+[node name="Label3D" type="Label3D" parent="CharacterBody3D/Node3D/RCast10"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
+billboard = 1
+text = "0.00"
+font_size = 16
+script = ExtResource("4_su3bq")
+
+[node name="RCast11" type="RayCast3D" parent="CharacterBody3D/Node3D"]
+transform = Transform3D(0.866026, 0, -0.5, 0, 1, 0, 0.5, 0, 0.866026, 0, 0, 0)
+target_position = Vector3(0, 0, -100)
+script = ExtResource("19_n6x7i")
+PulseInterval = 0.5
+
+[node name="Label3D" type="Label3D" parent="CharacterBody3D/Node3D/RCast11"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
+billboard = 1
+text = "0.00"
+font_size = 16
+script = ExtResource("4_su3bq")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -0.0193196, 0.999813, 0, -0.999813, -0.0193196, 0, 0.77865, 0)
@@ -198,5 +352,17 @@ shape = SubResource("BoxShape3D_4fmel")
 [node name="GridMap" type="GridMap" parent="."]
 mesh_library = ExtResource("20_qdxy3")
 script = ExtResource("21_mdqg0")
+metadata/_editor_floor_ = Vector3(0, -1, 0)
 
-[connection signal="OnSurfaceDetected" from="CharacterBody3D/CollisionShape3D/RayCast3D" to="CharacterBody3D" method="OnSignalReceived"]
+[connection signal="OnSurfaceDetected" from="CharacterBody3D/Node3D/RCast0" to="CharacterBody3D/Node3D/RCast0/Label3D" method="OnSignalReceived"]
+[connection signal="OnSurfaceDetected" from="CharacterBody3D/Node3D/RCast1" to="CharacterBody3D/Node3D/RCast1/Label3D" method="OnSignalReceived"]
+[connection signal="OnSurfaceDetected" from="CharacterBody3D/Node3D/RCast2" to="CharacterBody3D/Node3D/RCast2/Label3D" method="OnSignalReceived"]
+[connection signal="OnSurfaceDetected" from="CharacterBody3D/Node3D/RCast3" to="CharacterBody3D/Node3D/RCast3/Label3D" method="OnSignalReceived"]
+[connection signal="OnSurfaceDetected" from="CharacterBody3D/Node3D/RCast4" to="CharacterBody3D/Node3D/RCast4/Label3D" method="OnSignalReceived"]
+[connection signal="OnSurfaceDetected" from="CharacterBody3D/Node3D/RCast5" to="CharacterBody3D/Node3D/RCast5/Label3D" method="OnSignalReceived"]
+[connection signal="OnSurfaceDetected" from="CharacterBody3D/Node3D/RCast6" to="CharacterBody3D/Node3D/RCast6/Label3D" method="OnSignalReceived"]
+[connection signal="OnSurfaceDetected" from="CharacterBody3D/Node3D/RCast7" to="CharacterBody3D/Node3D/RCast7/Label3D" method="OnSignalReceived"]
+[connection signal="OnSurfaceDetected" from="CharacterBody3D/Node3D/RCast8" to="CharacterBody3D/Node3D/RCast8/Label3D" method="OnSignalReceived"]
+[connection signal="OnSurfaceDetected" from="CharacterBody3D/Node3D/RCast9" to="CharacterBody3D/Node3D/RCast9/Label3D" method="OnSignalReceived"]
+[connection signal="OnSurfaceDetected" from="CharacterBody3D/Node3D/RCast10" to="CharacterBody3D/Node3D/RCast10/Label3D" method="OnSignalReceived"]
+[connection signal="OnSurfaceDetected" from="CharacterBody3D/Node3D/RCast11" to="CharacterBody3D/Node3D/RCast11/Label3D" method="OnSignalReceived"]
