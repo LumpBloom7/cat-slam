@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 public interface Tile { }
 
 public struct Floor : Tile

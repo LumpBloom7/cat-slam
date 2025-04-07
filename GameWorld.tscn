@@ -153,7 +153,6 @@ near = 0.105
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.045, 0)
 
 [node name="RCast0" type="RayCast3D" parent="Robot/SensorArray"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
 script = ExtResource("19_n6x7i")
 PulseInterval = 0.5

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http.Headers;
 
 public class WaveFunctionCollapse
 {
@@ -17,7 +16,7 @@ public class WaveFunctionCollapse
         Height = height;
         Width = width;
     }
-    
+
     private bool entropyLeft(HashSet<(string, int)>[][] mapToCheck)
     {
         for (int i = 0; i < mapToCheck.Length; i++)
@@ -38,7 +37,7 @@ public class WaveFunctionCollapse
         // Finds the  position with the minimal entropy
         int min = int.MaxValue;
         (int, int) pos = errorPos;
-        
+
         for (int i = 0; i < mapToCheck.Length; i++)
         {
             for (int j = 0; j < mapToCheck[i].Length; j++)
@@ -58,35 +57,35 @@ public class WaveFunctionCollapse
     {
         // Finds the position of the neighbours
         List<(int, int)> toAddTo = new List<(int, int)>();
-        
+
         // UP
         if (pos.Item1 - 1 >= 0)
             toAddTo.Add((pos.Item1 - 1, pos.Item2));
-        
+
         // DOWN
         if (pos.Item1 + 1 < Height)
             toAddTo.Add((pos.Item1 + 1, pos.Item2));
-        
+
         // LEFT
         if (pos.Item2 - 1 >= 0)
             toAddTo.Add((pos.Item1, pos.Item2 - 1));
-        
+
         // RIGHT
         if (pos.Item2 + 1 < Width)
             toAddTo.Add((pos.Item1, pos.Item2 + 1));
-        
+
         return toAddTo;
     }
 
     private HashSet<(string, int)> getConstraintsFromNeighbor(
-        (int, int) current, 
-        (int, int) neighbor, 
+        (int, int) current,
+        (int, int) neighbor,
         HashSet<(string, int)>[][] map)
     {
         var blockDict = BlockDefs.AllBlocks;
         var neighborOptions = map[neighbor.Item1][neighbor.Item2];
         HashSet<(string, int)> allowed = new HashSet<(string, int)>();
-        
+
         // Calculates the direction of the constraint
         if (neighbor.Item1 < current.Item1) // Neighbor is ABOVE
         {
@@ -124,7 +123,7 @@ public class WaveFunctionCollapse
                 allowed.UnionWith(toCheck.LeftAllow);
             }
         }
-        
+
         return allowed;
     }
 
@@ -132,55 +131,55 @@ public class WaveFunctionCollapse
     {
         var neighbors = getNeighbours(pos);
         var currentOptions = new HashSet<(string, int)>(map[pos.Item1][pos.Item2]);
-        
+
         foreach (var neighbor in neighbors)
         {
             var constraintsFromNeighbor = getConstraintsFromNeighbor(pos, neighbor, map);
-            
+
             // Applies constraints by intersecting with current options
             currentOptions.IntersectWith(constraintsFromNeighbor);
-            
+
             // Checks for contradiction (no options left)
             if (currentOptions.Count == 0)
             {
                 Console.WriteLine($"Contradiction at ({pos.Item1}, {pos.Item2})");
-                return false; 
+                return false;
             }
         }
-        
+
         // Checks if a change occured
         if (!currentOptions.SetEquals(map[pos.Item1][pos.Item2]))
         {
             map[pos.Item1][pos.Item2] = currentOptions;
-            return true; 
+            return true;
         }
-        
-        return false; 
+
+        return false;
     }
 
     private bool propagateConstraints((int, int) startPos, HashSet<(string, int)>[][] map)
     {
         Queue<(int, int)> queue = new Queue<(int, int)>();
         HashSet<(int, int)> enqueued = new HashSet<(int, int)>();
-        
+
         // Starts with neighbors of the collapsed cell
         foreach (var neighbor in getNeighbours(startPos))
         {
             queue.Enqueue(neighbor);
             enqueued.Add(neighbor);
         }
-        
+
         while (queue.Count > 0)
         {
             var current = queue.Dequeue();
-            
+
             // Updates the current cell based on its neighbors
             bool cellUpdated = updateCell(current, map);
-            
+
             // Signals contradiction
             if (map[current.Item1][current.Item2].Count == 0)
                 return false;
-            
+
             // If cell was updated, add neighbours to queue
             if (cellUpdated)
             {
@@ -194,7 +193,7 @@ public class WaveFunctionCollapse
                 }
             }
         }
-        
+
         return true; // No contradictions found
     }
 
@@ -202,7 +201,7 @@ public class WaveFunctionCollapse
     {
         // Clones the grid, for backtracking purpuses
         var clone = new HashSet<(string, int)>[Height][];
-        
+
         for (int i = 0; i < Height; i++)
         {
             clone[i] = new HashSet<(string, int)>[Width];
@@ -211,7 +210,7 @@ public class WaveFunctionCollapse
                 clone[i][j] = new HashSet<(string, int)>(original[i][j]);
             }
         }
-        
+
         return clone;
     }
 
@@ -222,12 +221,13 @@ public class WaveFunctionCollapse
         // Collapses to the chosen option
         options.Clear();
         options.Add(chosenOption);
-        
+
         // Propagates the effects of the collapse
         return propagateConstraints(pos, map);
     }
-    public Tile[][] transformIntoTiles(HashSet<(string, int)>[][] map){
-        
+    public Tile[][] transformIntoTiles(HashSet<(string, int)>[][] map)
+    {
+
 
         int newHeight = Height * BLOCK_LENGTH;
         int newWidth = Width * BLOCK_LENGTH;
@@ -260,13 +260,13 @@ public class WaveFunctionCollapse
     {
         int attempts = 0;
         bool success = false;
-        HashSet<(string, int)>[][] finalMap = null;
-        
+        HashSet<(string, int)>[][]? finalMap = null;
+
         while (!success && attempts < MAX_ATTEMPTS)
         {
             attempts++;
             Console.WriteLine($"Attempt {attempts}");
-            
+
             // Initializes a new grid with all options
             HashSet<(string, int)>[][] map = new HashSet<(string, int)>[Height][];
             for (int i = 0; i < Height; i++)
@@ -277,72 +277,72 @@ public class WaveFunctionCollapse
                     map[i][j] = new HashSet<(string, int)>(BlockDefs.AllBlocks.Keys);
                 }
             }
-            
+
             // Tries to solve the grid
             success = solveGrid(map);
-            
+
             if (success)
             {
                 finalMap = map;
                 break;
             }
         }
-        
+
         if (!success)
         {
             Console.WriteLine($"Failed to generate a valid solution after {MAX_ATTEMPTS} attempts.");
             return null;
         }
-        
+
         return transformIntoTiles(finalMap);
     }
 
     private bool solveGrid(HashSet<(string, int)>[][] map)
     {
         Stack<(HashSet<(string, int)>[][], (int, int), List<(string, int)>)> backtrackStack = new Stack<(HashSet<(string, int)>[][], (int, int), List<(string, int)>)>();
-        
+
         try
         {
             while (entropyLeft(map))
             {
                 Console.WriteLine("New iteration ----------------");
-                
+
                 // Finds cell with lowest entropy
                 var pos = findLeastEntropy(map);
                 if (pos == errorPos)
-                // No more cells with entropy > 1 (SHOULD NOT BE POSSIBLE, IF SO THEN RIP)
-                    break; 
-                
+                    // No more cells with entropy > 1 (SHOULD NOT BE POSSIBLE, IF SO THEN RIP)
+                    break;
+
                 // Gets all options for this cell
                 var options = map[pos.Item1][pos.Item2].ToList();
-                
+
                 // Saves the current state for backtracking
                 backtrackStack.Push((cloneGrid(map), pos, options));
-                
+
                 // Gets random index to get a random option
                 int randIndex = random.Next(options.Count);
                 var option = options[randIndex];
                 Console.WriteLine($"Trying option {option} at ({pos.Item1}, {pos.Item2})");
-                
+
                 //Error checking
                 if (!collapseCell(pos, map, option))
                 {
                     // Backtracking if collapse didn't work
                     if (!backtrack(ref map, backtrackStack))
                         // Backtracking failed
-                        return false; 
+                        return false;
                 }
-                
+
                 // Check for validity
                 if (hasEmptyCells(map))
                 {
                     // Backtracking if empty cells present
                     if (!backtrack(ref map, backtrackStack))
                         // Backtracking failed
-                        return false; 
+                        return false;
                 }
             }
-            
+
             return !hasEmptyCells(map);
         }
         catch (Exception ex)
@@ -352,37 +352,37 @@ public class WaveFunctionCollapse
         }
     }
 
-    private bool backtrack(ref HashSet<(string, int)>[][] map, 
+    private bool backtrack(ref HashSet<(string, int)>[][] map,
                           Stack<(HashSet<(string, int)>[][], (int, int), List<(string, int)>)> backtrackStack)
     {
         // MIGHT BE FOULTY, MADE JUST IN CASE
         Console.WriteLine("Backtracking...");
-        
+
         if (backtrackStack.Count == 0)
             // Nothing to backtrack to (RIP)
-            return false; 
-        
+            return false;
+
         var (savedMap, pos, options) = backtrackStack.Pop();
-        
+
         // Remove option that lead to fail
         options.RemoveAt(0);
-        
+
         if (options.Count == 0)
         {
             // Backtrack further if no oprions present
             return backtrack(ref map, backtrackStack);
         }
-        
+
         // Restores the map state
         map = savedMap;
-        
+
         // Try the next option
         var nextOption = options[0];
         Console.WriteLine($"Trying alternative option {nextOption} at ({pos.Item1}, {pos.Item2})");
-        
+
         // Push updated options back to the stack
         backtrackStack.Push((cloneGrid(map), pos, options));
-        
+
         // Try to collapse with the new option
         return collapseCell(pos, map, nextOption);
     }
@@ -404,7 +404,7 @@ public class WaveFunctionCollapse
     {
         WaveFunctionCollapse w = new WaveFunctionCollapse(3, 3);
         Tile[][] tiles = w.Generate();
-        
+
         // Print the result
         if (tiles != null)
         {
@@ -426,13 +426,16 @@ public class WaveFunctionCollapse
             {
                 foreach (var cell in row)
                 {
-                    if (cell is Wall){
+                    if (cell is Wall)
+                    {
                         Console.Write("W");
                     }
-                    else if(cell is Floor){
+                    else if (cell is Floor)
+                    {
                         Console.Write("F");
                     }
-                    else{
+                    else
+                    {
                         Console.Write("-");
                     }
                     Console.Write(" | ");
