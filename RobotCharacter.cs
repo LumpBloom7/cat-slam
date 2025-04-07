@@ -58,8 +58,6 @@ public partial class RobotCharacter : CharacterBody3D
         else
             rightVel = Math.Clamp(rightAcc + rightVel, -MaxSpeed, MaxSpeed);
 
-        EmitSignal(SignalName.LeftMotorValueChanged, leftVel);
-        EmitSignal(SignalName.RightMotorValueChanged, rightVel);
 
         float rotAmount = (rightVel - leftVel) / (Radius * 2);
 
@@ -71,7 +69,16 @@ public partial class RobotCharacter : CharacterBody3D
 
         Velocity = movementVector;
 
+        var origPos = Position;
+
         MoveAndSlide();
+
+        if (origPos == Position)
+            leftVel = rightVel = 0;
+
+        EmitSignal(SignalName.LeftMotorValueChanged, leftVel);
+        EmitSignal(SignalName.RightMotorValueChanged, rightVel);
+
 
         // Update breadcrumbs
         // The breadcrumb grid is already offseted, so we don't haee to do it locally.
