@@ -1,9 +1,12 @@
-[gd_scene load_steps=17 format=3 uid="uid://cg4dlisrpp3dm"]
+[gd_scene load_steps=20 format=3 uid="uid://cg4dlisrpp3dm"]
 
 [ext_resource type="Script" uid="uid://dd4xddwo2stq4" path="res://RobotCharacter.cs" id="1_3w644"]
+[ext_resource type="PackedScene" uid="uid://dgqpwmfnga1gx" path="res://marisa_fumo/scene.gltf" id="2_28gir"]
 [ext_resource type="PackedScene" uid="uid://wl31x5pq0c2u" path="res://assets/Robot/scene.gltf" id="2_58bju"]
+[ext_resource type="Script" uid="uid://bsqh43fu6ya6p" path="res://marisa_fumo/FumoBounce.cs" id="3_jih74"]
 [ext_resource type="Script" uid="uid://ctm70wi0h082n" path="res://DistanceLabel.cs" id="4_su3bq"]
 [ext_resource type="Script" uid="uid://devksy6gknh2e" path="res://MotorLabel.cs" id="5_su3bq"]
+[ext_resource type="PackedScene" uid="uid://cmq4qgetryove" path="res://bocchi_plushie/scene.gltf" id="8_2dy0i"]
 [ext_resource type="MeshLibrary" uid="uid://brvqep4qrp41h" path="res://Dots.tres" id="9_c1plj"]
 [ext_resource type="Shader" uid="uid://dtwhoplmqoos" path="res://assets/water.gdshader" id="19_4fmel"]
 [ext_resource type="Script" uid="uid://cqnqswx0c8617" path="res://SimulatedLidar.cs" id="19_n6x7i"]
@@ -49,222 +52,272 @@ size = Vector3(2, 2, 0.005)
 floor_stop_on_slope = false
 script = ExtResource("1_3w644")
 
+[node name="Camera3D" type="Camera3D" parent="Robot"]
+transform = Transform3D(1, 0, 0, 0, 0.819152, 0.573576, 0, -0.573576, 0.819152, 0, 1.215, 1)
+size = 0.045
+near = 0.188
+
+[node name="Marisa fumo" parent="Robot" instance=ExtResource("2_28gir")]
+transform = Transform3D(0.015, 0, 0, 0, 0.015, 0, 0, 0, 0.015, 0, 0.075, 0)
+script = ExtResource("3_jih74")
+BounceAmount = 0.001
+
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Robot"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0430663, 0)
 shape = SubResource("CylinderShape3D_o0r38")
 
-[node name="Sketchfab_Scene" parent="Robot" instance=ExtResource("2_58bju")]
+[node name="Robot Vacuum" parent="Robot" instance=ExtResource("2_58bju")]
 transform = Transform3D(-1, 0, -1.50996e-07, 0, 1, 0, 1.50996e-07, 0, -1, 0, 0, 0)
 
-[node name="Camera3D" type="Camera3D" parent="Robot"]
-transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 0, 0.75, 1)
-v_offset = 1.0
-fov = 103.0
-near = 0.105
-
 [node name="SensorArray" type="Node3D" parent="Robot"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.045, 0)
+transform = Transform3D(1, 0, 0, 0, 1, -2.98023e-08, 0, 2.98023e-08, 1, 0, 0.0450001, 0)
+visible = false
 
 [node name="RCast0" type="RayCast3D" parent="Robot/SensorArray"]
 target_position = Vector3(0, 0, -100)
+debug_shape_custom_color = Color(0, 1, 1, 1)
+debug_shape_thickness = 1
 script = ExtResource("19_n6x7i")
 PulseInterval = 0.5
 
 [node name="Label3D" type="Label3D" parent="Robot/SensorArray/RCast0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
+pixel_size = 0.001
 billboard = 1
+no_depth_test = true
 texture_filter = 5
 text = "0.00"
-font_size = 16
-outline_size = 8
+font_size = 64
 script = ExtResource("4_su3bq")
 
 [node name="RCast1" type="RayCast3D" parent="Robot/SensorArray"]
 transform = Transform3D(0.866026, 0, 0.5, 0, 1, 0, -0.5, 0, 0.866026, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
+debug_shape_custom_color = Color(0, 1, 1, 1)
+debug_shape_thickness = 1
 script = ExtResource("19_n6x7i")
 PulseInterval = 0.5
 
 [node name="Label3D" type="Label3D" parent="Robot/SensorArray/RCast1"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
+pixel_size = 0.001
 billboard = 1
+no_depth_test = true
 texture_filter = 5
 text = "0.00"
-font_size = 16
-outline_size = 8
+font_size = 64
 script = ExtResource("4_su3bq")
 
 [node name="RCast2" type="RayCast3D" parent="Robot/SensorArray"]
 transform = Transform3D(0.5, 0, 0.866026, 0, 1, 0, -0.866026, 0, 0.5, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
+debug_shape_custom_color = Color(0, 1, 1, 1)
+debug_shape_thickness = 1
 script = ExtResource("19_n6x7i")
 PulseInterval = 0.5
 
 [node name="Label3D" type="Label3D" parent="Robot/SensorArray/RCast2"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
+pixel_size = 0.001
 billboard = 1
+no_depth_test = true
 texture_filter = 5
 text = "0.00"
-font_size = 16
-outline_size = 8
+font_size = 64
 script = ExtResource("4_su3bq")
 
 [node name="RCast3" type="RayCast3D" parent="Robot/SensorArray"]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
+debug_shape_custom_color = Color(0, 1, 1, 1)
+debug_shape_thickness = 1
 script = ExtResource("19_n6x7i")
 PulseInterval = 0.5
 
 [node name="Label3D" type="Label3D" parent="Robot/SensorArray/RCast3"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
+pixel_size = 0.001
 billboard = 1
+no_depth_test = true
 texture_filter = 5
 text = "0.00"
-font_size = 16
-outline_size = 8
+font_size = 64
 script = ExtResource("4_su3bq")
 
 [node name="RCast4" type="RayCast3D" parent="Robot/SensorArray"]
 transform = Transform3D(-0.5, 0, 0.866026, 0, 1, 0, -0.866026, 0, -0.5, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
+debug_shape_custom_color = Color(0, 1, 1, 1)
+debug_shape_thickness = 1
 script = ExtResource("19_n6x7i")
 PulseInterval = 0.5
 
 [node name="Label3D" type="Label3D" parent="Robot/SensorArray/RCast4"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
+pixel_size = 0.001
 billboard = 1
+no_depth_test = true
 texture_filter = 5
 text = "0.00"
-font_size = 16
-outline_size = 8
+font_size = 64
 script = ExtResource("4_su3bq")
 
 [node name="RCast5" type="RayCast3D" parent="Robot/SensorArray"]
 transform = Transform3D(-0.866026, 0, 0.5, 0, 1, 0, -0.5, 0, -0.866026, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
+debug_shape_custom_color = Color(0, 1, 1, 1)
+debug_shape_thickness = 1
 script = ExtResource("19_n6x7i")
 PulseInterval = 0.5
 
 [node name="Label3D" type="Label3D" parent="Robot/SensorArray/RCast5"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
+pixel_size = 0.001
 billboard = 1
+no_depth_test = true
 texture_filter = 5
 text = "0.00"
-font_size = 16
-outline_size = 8
+font_size = 64
 script = ExtResource("4_su3bq")
 
 [node name="RCast6" type="RayCast3D" parent="Robot/SensorArray"]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
+debug_shape_custom_color = Color(0, 1, 1, 1)
+debug_shape_thickness = 1
 script = ExtResource("19_n6x7i")
 PulseInterval = 0.5
 
 [node name="Label3D" type="Label3D" parent="Robot/SensorArray/RCast6"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
+pixel_size = 0.001
 billboard = 1
+no_depth_test = true
 texture_filter = 5
 text = "0.00"
-font_size = 16
-outline_size = 8
+font_size = 64
 script = ExtResource("4_su3bq")
 
 [node name="RCast7" type="RayCast3D" parent="Robot/SensorArray"]
 transform = Transform3D(-0.866026, 0, -0.5, 0, 1, 0, 0.5, 0, -0.866026, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
+debug_shape_custom_color = Color(0, 1, 1, 1)
+debug_shape_thickness = 1
 script = ExtResource("19_n6x7i")
 PulseInterval = 0.5
 
 [node name="Label3D" type="Label3D" parent="Robot/SensorArray/RCast7"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
+pixel_size = 0.001
 billboard = 1
+no_depth_test = true
 texture_filter = 5
 text = "0.00"
-font_size = 16
-outline_size = 8
+font_size = 64
 script = ExtResource("4_su3bq")
 
 [node name="RCast8" type="RayCast3D" parent="Robot/SensorArray"]
 transform = Transform3D(-0.5, 0, -0.866026, 0, 1, 0, 0.866026, 0, -0.5, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
+debug_shape_custom_color = Color(0, 1, 1, 1)
+debug_shape_thickness = 1
 script = ExtResource("19_n6x7i")
 PulseInterval = 0.5
 
 [node name="Label3D" type="Label3D" parent="Robot/SensorArray/RCast8"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
+pixel_size = 0.001
 billboard = 1
+no_depth_test = true
 texture_filter = 5
 text = "0.00"
-font_size = 16
-outline_size = 8
+font_size = 64
 script = ExtResource("4_su3bq")
 
 [node name="RCast9" type="RayCast3D" parent="Robot/SensorArray"]
 transform = Transform3D(1.19249e-08, 0, -1, 0, 1, 0, 1, 0, 1.19249e-08, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
+debug_shape_custom_color = Color(0, 1, 1, 1)
+debug_shape_thickness = 1
 script = ExtResource("19_n6x7i")
 PulseInterval = 0.5
 
 [node name="Label3D" type="Label3D" parent="Robot/SensorArray/RCast9"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
+pixel_size = 0.001
 billboard = 1
+no_depth_test = true
 texture_filter = 5
 text = "0.00"
-font_size = 16
-outline_size = 8
+font_size = 64
 script = ExtResource("4_su3bq")
 
 [node name="RCast10" type="RayCast3D" parent="Robot/SensorArray"]
 transform = Transform3D(0.5, 0, -0.866026, 0, 1, 0, 0.866026, 0, 0.5, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
+debug_shape_custom_color = Color(0, 1, 1, 1)
+debug_shape_thickness = 1
 script = ExtResource("19_n6x7i")
 PulseInterval = 0.5
 
 [node name="Label3D" type="Label3D" parent="Robot/SensorArray/RCast10"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
+pixel_size = 0.001
 billboard = 1
+no_depth_test = true
 texture_filter = 5
 text = "0.00"
-font_size = 16
-outline_size = 8
+font_size = 64
 script = ExtResource("4_su3bq")
 
 [node name="RCast11" type="RayCast3D" parent="Robot/SensorArray"]
 transform = Transform3D(0.866026, 0, -0.5, 0, 1, 0, 0.5, 0, 0.866026, 0, 0, 0)
 target_position = Vector3(0, 0, -100)
+debug_shape_custom_color = Color(0, 1, 1, 1)
+debug_shape_thickness = 1
 script = ExtResource("19_n6x7i")
 PulseInterval = 0.5
 
 [node name="Label3D" type="Label3D" parent="Robot/SensorArray/RCast11"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0554662, -0.312778)
+pixel_size = 0.001
 billboard = 1
+no_depth_test = true
 texture_filter = 5
 text = "0.00"
-font_size = 16
-outline_size = 8
+font_size = 64
 script = ExtResource("4_su3bq")
 
 [node name="MotorLabels" type="Node3D" parent="Robot"]
+transform = Transform3D(1, 0, 0, 0, 1, -2.98023e-08, 0, 2.98023e-08, 1, 0, 0, 5.96046e-08)
+visible = false
 
 [node name="Label3D" type="Label3D" parent="Robot/MotorLabels"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, 0.1, 0)
 sorting_use_aabb_center = false
+pixel_size = 0.001
 billboard = 1
+no_depth_test = true
 modulate = Color(1, 0, 0.392157, 1)
 text = "Test"
-font_size = 16
-outline_size = 8
+font_size = 80
+outline_size = 18
 script = ExtResource("5_su3bq")
 
 [node name="Label3D2" type="Label3D" parent="Robot/MotorLabels"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.15, 0.1, 0)
 sorting_use_aabb_center = false
+pixel_size = 0.001
 billboard = 1
+no_depth_test = true
 modulate = Color(1, 0, 0.392157, 1)
 text = "Test"
-font_size = 16
-outline_size = 8
+font_size = 80
+outline_size = 18
 script = ExtResource("5_su3bq")
+
+[node name="Bocchi dino" parent="Robot" instance=ExtResource("8_2dy0i")]
+transform = Transform3D(9.9413, 0, 17.3543, 0, 20, 0, -17.3543, 0, 9.9413, 0, -5, -30)
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 100, 0)
@@ -310,6 +363,10 @@ cell_size = Vector3(0.3, 0.1, 0.3)
 visible = false
 mesh_library = SubResource("MeshLibrary_c1plj")
 cell_size = Vector3(0.25, 0.25, 0.25)
+
+[node name="DirectionalLight3D2" type="SpotLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -17.1081)
+spot_range = 15.4252
 
 [connection signal="LeftMotorValueChanged" from="Robot" to="Robot/MotorLabels/Label3D" method="OnSignalReceived"]
 [connection signal="RightMotorValueChanged" from="Robot" to="Robot/MotorLabels/Label3D2" method="OnSignalReceived"]

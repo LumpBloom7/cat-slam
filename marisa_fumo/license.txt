@@ -1,0 +1,11 @@
+Model Information:
+* title:	東方Project Marisa Kirisame Fumo 霧雨 魔理沙
+* source:	https://sketchfab.com/3d-models/project-marisa-kirisame-fumo-7dea820bf4884ecc8f2c31a085b07428
+* author:	203Null (https://sketchfab.com/203Null)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "東方Project Marisa Kirisame Fumo 霧雨 魔理沙" (https://sketchfab.com/3d-models/project-marisa-kirisame-fumo-7dea820bf4884ecc8f2c31a085b07428) by 203Null (https://sketchfab.com/203Null) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
