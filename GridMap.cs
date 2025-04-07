@@ -1,65 +1,60 @@
 using Godot;
 using System;
-
 public partial class GridMap : Godot.GridMap
 {
 
-    private int mapWidth;
+	private int mapWidth;
 
-    private int mapHeight;
-    private int[,] bitmap;
+	private int mapHeight;
+	private Tile[][]? bitmap;
 
 
 
-    public GridMap() //Tiles is out matrix with tiles (has rows and columns, row is an array)
-    {
-        bitmap = new int[,] { { 1, 1, 1 }, { 0, 0, 0 } };
-        mapHeight = bitmap.GetLength(0);
-        mapWidth = bitmap.GetLength(1);
-    }
-    public override void _Ready()
-    {
-        //GenerateMap();
-        int sourceId = MeshLibrary.FindItemByName("block-grass");
-        GD.Print("Mesh ID:", sourceId);
+	public GridMap() //Tiles is out matrix with tiles (has rows and columns, row is an array)
+	{
 
-        for (int x = -10; x <= 10; x++)
-        {
-            for (int z = -10; z <= 10; z++)
-            {
-                Vector3I pos = new Vector3I(x, -1, z);
-                SetCellItem(pos, sourceId);
-            }
+	}
+	public override void _Ready()
+	{
+		WaveFunctionCollapse wave = new WaveFunctionCollapse(3, 3);
+		bitmap = wave.Generate(); //z,x
+		if (bitmap is null)
+		{
+			Console.WriteLine("Failed to generate a solution.");
+			return;
+		}
+		mapHeight = bitmap.Length;
+		mapWidth = bitmap[0].Length;
+		GenerateMap();
+	}
 
-        }
-    }
-
-    private void GenerateMap()
-    {
-        //TileSet tileSet = TileSet;
-        GD.Print(mapWidth, mapHeight);
-        for (int x = -10; x < 10; x++)  // Columns (Y-axis)
-        {
-            for (int z = -10; z < 10; z++) // Rows (X-axis)
-            {
-                //GD.Print(x, z);
-                Vector3I tilePosition = new Vector3I(-1, -2, -1);
-                int sourceId = MeshLibrary.FindItemByName("block-grass");
-                GD.Print(sourceId);
-                // switch (bitmap[x, z])
-                // {
-                // 	case 1:
-                // 		//sourceId = 2;
-                // 		//atlasCoords = new Vector2I(0, 0);
-                // 		break;
-
-                // 	case 0:
-                // 		//sourceId = 2;
-                // 		//atlasCoords = new Vector2I(8, 1);
-                // 		break;
-                // }
-                SetCellItem(tilePosition, sourceId);
-            }
-        }
-    }
+	private void GenerateMap()
+	{
+		GD.Print(mapHeight, mapWidth);
+		for (int x = 0; x < mapHeight; x++)
+		{
+			for (int z = 0; z < mapWidth; z++)
+			{
+				Vector3I tilePosition = new Vector3I(x, -1, z);
+				int sourceId = MeshLibrary.FindItemByName("block-grass");
+				switch (bitmap[z][x])
+				{
+					case Wall:
+						GD.Print("Wall");
+						sourceId = MeshLibrary.FindItemByName("block-snow-large");
+						tilePosition = new Vector3I(x, 0, z);
+						break;
+					case Floor:
+						GD.Print("Floor");
+						sourceId = MeshLibrary.FindItemByName("block-grass-large");
+						tilePosition = new Vector3I(x, -1, z);
+						break;
+				}
+				GD.Print(tilePosition);
+				GD.Print(sourceId);
+				GD.Print("");
+				SetCellItem(tilePosition, sourceId);
+			}
+		}
+	}
 }
