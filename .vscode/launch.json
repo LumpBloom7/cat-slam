@@ -6,7 +6,7 @@
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${env:GODOT_PATH}",
+            "program": "/Applications/Godot_mono.app/Contents/MacOS/Godot",
             "args": [],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
