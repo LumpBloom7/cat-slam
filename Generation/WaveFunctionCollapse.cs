@@ -259,10 +259,8 @@ public class WaveFunctionCollapse
     public Tile[][]? Generate()
     {
         int attempts = 0;
-        bool success = false;
-        HashSet<(string, int)>[][]? finalMap = null;
 
-        while (!success && attempts < MAX_ATTEMPTS)
+        while (attempts < MAX_ATTEMPTS)
         {
             attempts++;
             Console.WriteLine($"Attempt {attempts}");
@@ -279,22 +277,15 @@ public class WaveFunctionCollapse
             }
 
             // Tries to solve the grid
-            success = solveGrid(map);
+            bool success = solveGrid(map);
 
             if (success)
-            {
-                finalMap = map;
-                break;
-            }
+                return transformIntoTiles(map);
         }
 
-        if (!success)
-        {
-            Console.WriteLine($"Failed to generate a valid solution after {MAX_ATTEMPTS} attempts.");
-            return null;
-        }
+        Console.WriteLine($"Failed to generate a valid solution after {MAX_ATTEMPTS} attempts.");
+        return null;
 
-        return transformIntoTiles(finalMap);
     }
 
     private bool solveGrid(HashSet<(string, int)>[][] map)
@@ -403,49 +394,53 @@ public class WaveFunctionCollapse
     public static void Main(string[] args)
     {
         WaveFunctionCollapse w = new WaveFunctionCollapse(3, 3);
-        Tile[][] tiles = w.Generate();
+        Tile[][]? tiles = w.Generate();
 
         // Print the result
-        if (tiles != null)
-        {
-            Console.WriteLine("Final solution:");
-            // foreach (var row in blocks)
-            // {
-            //     foreach (var cell in row)
-            //     {
-            //         Console.Write($"[{cell.Count}] ");
-            //         foreach (var option in cell)
-            //         {
-            //             Console.Write($"{option} ");
-            //         }
-            //         Console.Write(" | ");
-            //     }
-            //     Console.WriteLine();
-            // }
-            foreach (var row in tiles)
-            {
-                foreach (var cell in row)
-                {
-                    if (cell is Wall)
-                    {
-                        Console.Write("W");
-                    }
-                    else if (cell is Floor)
-                    {
-                        Console.Write("F");
-                    }
-                    else
-                    {
-                        Console.Write("-");
-                    }
-                    Console.Write(" | ");
-                }
-                Console.WriteLine();
-            }
-        }
-        else
+
+        if (tiles is null)
         {
             Console.WriteLine("Failed to generate a solution.");
+            return;
+        }
+
+        Console.WriteLine("Final solution:");
+        // foreach (var row in blocks)
+        // {
+        //     foreach (var cell in row)
+        //     {
+        //         Console.Write($"[{cell.Count}] ");
+        //         foreach (var option in cell)
+        //         {
+        //             Console.Write($"{option} ");
+        //         }
+        //         Console.Write(" | ");
+        //     }
+        //     Console.WriteLine();
+        // }
+        foreach (var row in tiles)
+        {
+            foreach (var cell in row)
+            {
+                if (cell is Wall)
+                {
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    Console.Write("W");
+                }
+                else if (cell is Floor)
+                {
+                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.Write("F");
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.Write("-");
+                }
+                Console.ForegroundColor = Console.BackgroundColor;
+                Console.Write(" | ");
+            }
+            Console.WriteLine();
         }
     }
 }
