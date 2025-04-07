@@ -1,9 +1,10 @@
-[gd_scene load_steps=15 format=3 uid="uid://cg4dlisrpp3dm"]
+[gd_scene load_steps=17 format=3 uid="uid://cg4dlisrpp3dm"]
 
 [ext_resource type="Script" uid="uid://dd4xddwo2stq4" path="res://RobotCharacter.cs" id="1_3w644"]
 [ext_resource type="PackedScene" uid="uid://wl31x5pq0c2u" path="res://assets/Robot/scene.gltf" id="2_58bju"]
 [ext_resource type="Script" uid="uid://ctm70wi0h082n" path="res://DistanceLabel.cs" id="4_su3bq"]
 [ext_resource type="Script" uid="uid://devksy6gknh2e" path="res://MotorLabel.cs" id="5_su3bq"]
+[ext_resource type="MeshLibrary" uid="uid://brvqep4qrp41h" path="res://Dots.tres" id="9_c1plj"]
 [ext_resource type="Shader" uid="uid://dtwhoplmqoos" path="res://assets/water.gdshader" id="19_4fmel"]
 [ext_resource type="Script" uid="uid://cqnqswx0c8617" path="res://SimulatedLidar.cs" id="19_n6x7i"]
 [ext_resource type="MeshLibrary" uid="uid://d0v4s2kqpnxbu" path="res://assets/tiles.tres" id="20_qdxy3"]
@@ -39,6 +40,8 @@ size = Vector3(0.005, 2, 2)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_4fmel"]
 size = Vector3(2, 2, 0.005)
+
+[sub_resource type="MeshLibrary" id="MeshLibrary_c1plj"]
 
 [node name="Node3D" type="Node3D"]
 
@@ -297,6 +300,16 @@ shape = SubResource("BoxShape3D_4fmel")
 mesh_library = ExtResource("20_qdxy3")
 script = ExtResource("21_mdqg0")
 metadata/_editor_floor_ = Vector3(0, -1, 0)
+
+[node name="BreadcrumbMap" type="GridMap" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, 0, -0.15)
+mesh_library = ExtResource("9_c1plj")
+cell_size = Vector3(0.3, 0.1, 0.3)
+
+[node name="ProbMap" type="GridMap" parent="."]
+visible = false
+mesh_library = SubResource("MeshLibrary_c1plj")
+cell_size = Vector3(0.25, 0.25, 0.25)
 
 [connection signal="LeftMotorValueChanged" from="Robot" to="Robot/MotorLabels/Label3D" method="OnSignalReceived"]
 [connection signal="RightMotorValueChanged" from="Robot" to="Robot/MotorLabels/Label3D2" method="OnSignalReceived"]

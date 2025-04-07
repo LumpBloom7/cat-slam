@@ -3,7 +3,6 @@ using Godot;
 
 public partial class RobotCharacter : CharacterBody3D
 {
-
     [Export]
     public float AccelerationPerSecond { get; set; } = 1;
     [Export]
@@ -24,6 +23,14 @@ public partial class RobotCharacter : CharacterBody3D
 
     [Signal]
     public delegate void RightMotorValueChangedEventHandler(float velocity);
+
+    private Godot.GridMap breadcrumbMap = null!;
+
+    public override void _Ready()
+    {
+        base._Ready();
+        breadcrumbMap = GetParent().GetNode<Godot.GridMap>("BreadcrumbMap");
+    }
 
     public override void _PhysicsProcess(double delta)
     {
@@ -56,10 +63,6 @@ public partial class RobotCharacter : CharacterBody3D
 
         float rotAmount = (rightVel - leftVel) / (Radius * 2);
 
-        Console.WriteLine(AccelerationPerSecond);
-        Console.WriteLine(leftAcc);
-        Console.WriteLine(rightAcc);
-
         Rotation = Rotation with { Y = Rotation.Y + rotAmount * (float)delta };
 
         float velocity = (leftVel + rightVel) / 2;
@@ -69,5 +72,11 @@ public partial class RobotCharacter : CharacterBody3D
         Velocity = movementVector;
 
         MoveAndSlide();
+
+        // Update breadcrumbs
+        // The breadcrumb grid is already offseted, so we don't haee to do it locally.
+        int x = (int)MathF.Round(Position.X / 0.3f);
+        int z = (int)MathF.Round(Position.Z / 0.3f);
+        breadcrumbMap.SetCellItem(new Vector3I(x, 0, z), 0);
     }
 }
