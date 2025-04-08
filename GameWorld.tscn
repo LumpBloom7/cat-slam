@@ -1,6 +1,8 @@
-[gd_scene load_steps=20 format=3 uid="uid://cg4dlisrpp3dm"]
+[gd_scene load_steps=22 format=3 uid="uid://cg4dlisrpp3dm"]
 
 [ext_resource type="Script" uid="uid://dd4xddwo2stq4" path="res://RobotCharacter.cs" id="1_3w644"]
+[ext_resource type="TileSet" uid="uid://cua8c66gb0vwy" path="res://MinimapDots.tres" id="1_i451r"]
+[ext_resource type="Script" uid="uid://c5yybs8f6ho8x" path="res://Minimap.cs" id="1_oql0q"]
 [ext_resource type="PackedScene" uid="uid://dgqpwmfnga1gx" path="res://marisa_fumo/scene.gltf" id="2_28gir"]
 [ext_resource type="PackedScene" uid="uid://wl31x5pq0c2u" path="res://assets/Robot/scene.gltf" id="2_58bju"]
 [ext_resource type="Script" uid="uid://bap2podtt1raw" path="res://CameraController.cs" id="2_waypw"]
@@ -45,6 +47,14 @@ size = Vector2(25, 25)
 [sub_resource type="MeshLibrary" id="MeshLibrary_c1plj"]
 
 [node name="Node3D" type="Node3D"]
+
+[node name="HUD" type="CanvasLayer" parent="."]
+
+[node name="TerrainMinimap" type="TileMapLayer" parent="HUD"]
+position = Vector2(10, 10)
+scale = Vector2(10, 10)
+tile_set = ExtResource("1_i451r")
+script = ExtResource("1_oql0q")
 
 [node name="Robot" type="CharacterBody3D" parent="."]
 floor_stop_on_slope = false
@@ -355,6 +365,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -17.1081)
 spot_range = 15.4252
 
 [connection signal="LeftMotorValueChanged" from="Robot" to="Robot/MotorLabels/Label3D" method="OnSignalReceived"]
+[connection signal="PositionChanged" from="Robot" to="HUD/TerrainMinimap" method="OnPlayerMove"]
 [connection signal="RightMotorValueChanged" from="Robot" to="Robot/MotorLabels/Label3D2" method="OnSignalReceived"]
 [connection signal="OnSurfaceDetected" from="Robot/SensorArray/RCast0" to="Robot/SensorArray/RCast0/Label3D" method="OnSignalReceived"]
 [connection signal="OnSurfaceDetected" from="Robot/SensorArray/RCast1" to="Robot/SensorArray/RCast1/Label3D" method="OnSignalReceived"]

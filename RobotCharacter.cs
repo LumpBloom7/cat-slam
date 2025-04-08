@@ -24,12 +24,15 @@ public partial class RobotCharacter : CharacterBody3D
     [Signal]
     public delegate void RightMotorValueChangedEventHandler(float velocity);
 
-    private Godot.GridMap breadcrumbMap = null!;
+    [Signal]
+    public delegate void PositionChangedEventHandler(Vector3 position);
+
+    private GridMap breadcrumbMap = null!;
 
     public override void _Ready()
     {
         base._Ready();
-        breadcrumbMap = GetParent().GetNode<Godot.GridMap>("BreadcrumbMap");
+        breadcrumbMap = GetParent().GetNode<GridMap>("BreadcrumbMap");
     }
 
     public override void _PhysicsProcess(double delta)
@@ -85,5 +88,7 @@ public partial class RobotCharacter : CharacterBody3D
         int x = (int)MathF.Round(Position.X / 0.3f);
         int z = (int)MathF.Round(Position.Z / 0.3f);
         breadcrumbMap.SetCellItem(new Vector3I(x, 0, z), 0);
+
+        EmitSignal(SignalName.PositionChanged, Position);
     }
 }

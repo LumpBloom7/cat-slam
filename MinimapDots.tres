@@ -1,0 +1,19 @@
+[gd_resource type="TileSet" load_steps=3 format=3 uid="uid://cua8c66gb0vwy"]
+
+[ext_resource type="Texture2D" uid="uid://ctdpw8yqox1f5" path="res://Dots/dots.png" id="1_u07q3"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_aw38x"]
+resource_name = "Base"
+texture = ExtResource("1_u07q3")
+texture_region_size = Vector2i(1, 1)
+1:0/0 = 0
+2:0/0 = 0
+0:0/0 = 0
+
+[resource]
+tile_size = Vector2i(1, 1)
+uv_clipping = true
+terrain_set_0/mode = 0
+terrain_set_0/terrain_0/name = "Terrain 0"
+terrain_set_0/terrain_0/color = Color(0.5, 0.34375, 0.25, 1)
+sources/0 = SubResource("TileSetAtlasSource_aw38x")
