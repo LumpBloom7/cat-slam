@@ -10,7 +10,6 @@ emission = Color(0.190762, 0.190762, 0.190762, 1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_db6kb"]
 material = SubResource("StandardMaterial3D_70imv")
-size = Vector3(2, 2, 2)
 
 [sub_resource type="Image" id="Image_70imv"]
 data = {
@@ -25,14 +24,12 @@ data = {
 image = SubResource("Image_70imv")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_70imv"]
-size = Vector3(2, 2, 2)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bwt4j"]
 albedo_color = Color(0.474681, 0.671521, 0.35625, 1)
 
 [sub_resource type="BoxMesh" id="BoxMesh_qc3tk"]
 material = SubResource("StandardMaterial3D_bwt4j")
-size = Vector3(2, 2, 2)
 
 [sub_resource type="Image" id="Image_db6kb"]
 data = {
@@ -47,7 +44,6 @@ data = {
 image = SubResource("Image_db6kb")
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_db6kb"]
-size = Vector3(2, 2, 2)
 
 [resource]
 item/0/name = "block-snow-large"
