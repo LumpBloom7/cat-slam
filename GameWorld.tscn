@@ -1,11 +1,10 @@
-[gd_scene load_steps=22 format=3 uid="uid://cg4dlisrpp3dm"]
+[gd_scene load_steps=21 format=3 uid="uid://cg4dlisrpp3dm"]
 
 [ext_resource type="Script" uid="uid://dd4xddwo2stq4" path="res://RobotCharacter.cs" id="1_3w644"]
 [ext_resource type="TileSet" uid="uid://cua8c66gb0vwy" path="res://MinimapDots.tres" id="1_i451r"]
 [ext_resource type="Script" uid="uid://c5yybs8f6ho8x" path="res://Minimap.cs" id="1_oql0q"]
 [ext_resource type="PackedScene" uid="uid://dgqpwmfnga1gx" path="res://marisa_fumo/scene.gltf" id="2_28gir"]
 [ext_resource type="PackedScene" uid="uid://wl31x5pq0c2u" path="res://assets/Robot/scene.gltf" id="2_58bju"]
-[ext_resource type="Script" uid="uid://bap2podtt1raw" path="res://CameraController.cs" id="2_waypw"]
 [ext_resource type="Script" uid="uid://bsqh43fu6ya6p" path="res://marisa_fumo/FumoBounce.cs" id="3_jih74"]
 [ext_resource type="Script" uid="uid://ctm70wi0h082n" path="res://DistanceLabel.cs" id="4_su3bq"]
 [ext_resource type="Script" uid="uid://devksy6gknh2e" path="res://MotorLabel.cs" id="5_su3bq"]
@@ -59,20 +58,20 @@ script = ExtResource("1_oql0q")
 [node name="Robot" type="CharacterBody3D" parent="."]
 floor_stop_on_slope = false
 script = ExtResource("1_3w644")
-MaxSpeed = 10.0
+DeccelerationPerSecond = 1.0
 
 [node name="Node" type="Node3D" parent="Robot"]
-script = ExtResource("2_waypw")
 
 [node name="BehindCamera" type="Camera3D" parent="Robot/Node"]
 transform = Transform3D(1, 0, 0, 0, 0.819152, 0.573576, 0, -0.573576, 0.819152, 0, 1.215, 1)
+current = true
 size = 0.045
 near = 0.188
 
 [node name="TopDownCamera" type="Camera3D" parent="Robot/Node"]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 16.9973, 0)
+visible = false
 projection = 1
-current = true
 size = 10.0
 
 [node name="Marisa fumo" parent="Robot" instance=ExtResource("2_28gir")]
