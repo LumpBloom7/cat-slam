@@ -76,7 +76,7 @@ public partial class RobotCharacter : CharacterBody3D
 
         MoveAndSlide();
 
-        if (origPos == Position)
+        if (origPos == Position && rotAmount == 0)
             leftVel = rightVel = 0;
 
         EmitSignal(SignalName.LeftMotorValueChanged, leftVel);
