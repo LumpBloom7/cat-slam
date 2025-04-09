@@ -9,9 +9,9 @@
 [ext_resource type="Script" uid="uid://1piec6881yfk" path="res://Scripts/SimulatedLidar.cs" id="6_waypw"]
 [ext_resource type="Script" uid="uid://pi5vfwidfeia" path="res://Scripts/MotorLabel.cs" id="7_oql0q"]
 [ext_resource type="PackedScene" uid="uid://cmq4qgetryove" path="res://assets/bocchi_plushie/scene.gltf" id="8_2dy0i"]
-[ext_resource type="MeshLibrary" uid="uid://brvqep4qrp41h" path="res://Dots.tres" id="9_c1plj"]
 [ext_resource type="Script" uid="uid://b7ukxbyu1gast" path="res://Scripts/GridMapGenerator.cs" id="11_i451r"]
 [ext_resource type="MeshLibrary" uid="uid://lttiixrpg03p" path="res://assets/customTiles.tres" id="11_waypw"]
+[ext_resource type="MeshLibrary" uid="uid://b2igs571sgcx7" path="res://assets/Dots.tres" id="13_waypw"]
 [ext_resource type="Shader" uid="uid://dtwhoplmqoos" path="res://assets/water.gdshader" id="19_4fmel"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_o0r38"]
@@ -316,7 +316,7 @@ metadata/_editor_floor_ = Vector3(0, -2, 0)
 
 [node name="BreadcrumbMap" type="GridMap" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, 0, -0.15)
-mesh_library = ExtResource("9_c1plj")
+mesh_library = ExtResource("13_waypw")
 cell_size = Vector3(0.3, 0.001, 0.3)
 metadata/_editor_floor_ = Vector3(0, 0, 0)
 
