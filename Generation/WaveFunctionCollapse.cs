@@ -290,7 +290,8 @@ public class WaveFunctionCollapse
         wallOffMap(ref finalTieset);
 
         // Setting the starting position
-        
+        setSpawn(ref finalTieset);
+
         return finalTieset;
     }
 
@@ -469,6 +470,11 @@ public class WaveFunctionCollapse
                 {
                     Console.ForegroundColor = ConsoleColor.Green;
                     Console.Write("F");
+                }
+                else if (cell is Spawn)
+                {
+                    Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                    Console.Write("S");
                 }
                 else
                 {
