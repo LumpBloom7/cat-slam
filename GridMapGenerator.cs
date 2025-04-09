@@ -47,6 +47,11 @@ public partial class GridMapGenerator : GridMap
                         sourceId = MeshLibrary.FindItemByName("block-grass-large");
                         tilePosition = new Vector3I(x, -1, z);
                         break;
+                    case Spawn:
+                        GD.Print("Spawn");
+                        sourceId = MeshLibrary.FindItemByName("block-grass-large");
+                        tilePosition = new Vector3I(x, -1, z);
+                        break;
                 }
                 GD.Print(tilePosition);
                 GD.Print(sourceId);
