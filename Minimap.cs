@@ -16,7 +16,7 @@ public partial class Minimap : TileMapLayer
         {
             for (int x = 0; x < tiles[y].Length; ++x)
             {
-                SetCell(new Vector2I(x, y), 0, tiles[y][x] is Floor ? new Vector2I(0, 0) : new Vector2I(1, 0));
+                SetCell(new Vector2I(x, y), 0, tiles[y][x] is Floor or Spawn ? new Vector2I(0, 0) : new Vector2I(1, 0));
             }
         }
     }
