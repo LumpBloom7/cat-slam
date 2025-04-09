@@ -52,7 +52,7 @@ public partial class GridMapGenerator : GridMap
                         {
                             var player = GetParent().GetNode<RobotCharacter>("Robot");
 
-                            player.Position = tilePosition with { Y = 0 } - offset;
+                            player.Position = tilePosition with { Y = 0 } - offset + new Vector3(0.5f, 0, 0.5f);
                         }
                         break;
 
