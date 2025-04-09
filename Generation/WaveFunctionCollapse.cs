@@ -225,6 +225,37 @@ public class WaveFunctionCollapse
         // Propagates the effects of the collapse
         return propagateConstraints(pos, map);
     }
+    public void wallOffMap(ref Tile[][] map){
+        int height = map.Length;
+        int width = map[0].Length;
+        for (int i = 0; i < height; i++)
+        {
+            map[i][0] = new Wall();
+            map[i][width - 1] = new Wall();
+        }
+        for (int i = 0; i < width; i++)
+        {
+            map[0][i] = new Wall();
+            map[width - 1][i] = new Wall();
+        }
+    }
+
+    public void setSpawn(ref Tile[][] map){
+        List<(int y, int x)> openPositions = new List<(int y, int x)>();
+        for (int y = 0; y < map.Length; y++)
+        {
+            for (int x = 0; x < map[y].Length; x++)
+            {
+                if (map[y][x] is Floor)
+                {
+                    openPositions.Add((y, x));
+                }
+            }
+        }
+        int r = random.Next(openPositions.Count);
+        var spawn = openPositions[r];
+        map[spawn.y][spawn.x] = new Spawn();
+    }
     public Tile[][] transformIntoTiles(HashSet<(string, int)>[][] map)
     {
 
@@ -253,6 +284,13 @@ public class WaveFunctionCollapse
                 }
             }
         }
+        // Post processing steps 
+
+        // Walling off the edges of the map
+        wallOffMap(ref finalTieset);
+
+        // Setting the starting position
+        
         return finalTieset;
     }
 
@@ -429,7 +467,7 @@ public class WaveFunctionCollapse
                 }
                 else if (cell is Floor)
                 {
-                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.Write("F");
                 }
                 else
