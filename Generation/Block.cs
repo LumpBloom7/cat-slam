@@ -13,7 +13,12 @@ public struct Floor : Tile
         Type = type;
     }
 }
-
+public struct Spawn : Tile{
+    public int Type { get; }
+    public Spawn(int type = 1){
+        Type = type;
+    }
+}
 public struct Wall : Tile
 {
     public int Type { get; }

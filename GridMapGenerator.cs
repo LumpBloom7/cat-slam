@@ -43,10 +43,20 @@ public partial class GridMapGenerator : GridMap
                         tilePosition = new Vector3I(x, 0, z);
                         break;
                     case Floor:
+                    case Spawn:  // All spawns are also floors
                         GD.Print("Floor");
                         sourceId = MeshLibrary.FindItemByName("block-grass-large");
                         tilePosition = new Vector3I(x, -1, z);
+
+                        if (bitmap[z][x] is Spawn)
+                        {
+                            var player = GetParent().GetNode<RobotCharacter>("Robot");
+
+                            player.Position = tilePosition with { Y = 0 } - offset + new Vector3(0.5f, 0, 0.5f);
+                        }
                         break;
+
+
                 }
                 GD.Print(tilePosition);
                 GD.Print(sourceId);
