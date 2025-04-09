@@ -1,3 +1,4 @@
+using System;
 using Godot;
 
 public partial class Minimap : TileMapLayer
@@ -29,7 +30,7 @@ public partial class Minimap : TileMapLayer
     {
         SetCell(lastCell, 0, lastCellUv);
 
-        var pos2d = new Vector2I((int)(position.X - 0.5f), (int)(position.Z + -0.5f)) + offset;
+        var pos2d = new Vector2I((int)Math.Round(position.X - 0.5f), (int)Math.Round(position.Z - 0.5f)) + offset;
 
         lastCell = pos2d;
         lastCellUv = GetCellAtlasCoords(pos2d);
