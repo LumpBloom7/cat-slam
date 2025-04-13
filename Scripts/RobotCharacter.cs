@@ -14,6 +14,8 @@ public partial class RobotCharacter : CharacterBody3D
     [Export]
     public float Radius { get; set; } = 0.15f;
 
+    [Export]
+    public float OmnidirectionalSensorRange { get; set; } = 5f;
 
     private float leftVel = 0;
     private float rightVel = 0;
@@ -33,6 +35,7 @@ public partial class RobotCharacter : CharacterBody3D
     {
         base._Ready();
         breadcrumbMap = GetParent().GetNode<GridMap>("BreadcrumbMap");
+        AddChild(new BeaconDetector(OmnidirectionalSensorRange));
     }
 
     public override void _PhysicsProcess(double delta)
