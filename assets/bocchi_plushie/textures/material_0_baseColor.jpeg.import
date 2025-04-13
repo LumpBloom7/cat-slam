@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://cepdn33d8o3q2"
 path.s3tc="res://.godot/imported/material_0_baseColor.jpeg-168071fb115365f3e8ad4a414e46dc7c.s3tc.ctex"
+path.etc2="res://.godot/imported/material_0_baseColor.jpeg-168071fb115365f3e8ad4a414e46dc7c.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/bocchi_plushie/textures/material_0_baseColor.jpeg"
-dest_files=["res://.godot/imported/material_0_baseColor.jpeg-168071fb115365f3e8ad4a414e46dc7c.s3tc.ctex"]
+dest_files=["res://.godot/imported/material_0_baseColor.jpeg-168071fb115365f3e8ad4a414e46dc7c.s3tc.ctex", "res://.godot/imported/material_0_baseColor.jpeg-168071fb115365f3e8ad4a414e46dc7c.etc2.ctex"]
 
 [params]
 

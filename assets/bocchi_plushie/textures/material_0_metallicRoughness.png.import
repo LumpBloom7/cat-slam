@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://b7n0f11n25dvf"
 path.s3tc="res://.godot/imported/material_0_metallicRoughness.png-18a671befd7b2ca1012b983fafc0f3f3.s3tc.ctex"
+path.etc2="res://.godot/imported/material_0_metallicRoughness.png-18a671befd7b2ca1012b983fafc0f3f3.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/bocchi_plushie/textures/material_0_metallicRoughness.png"
-dest_files=["res://.godot/imported/material_0_metallicRoughness.png-18a671befd7b2ca1012b983fafc0f3f3.s3tc.ctex"]
+dest_files=["res://.godot/imported/material_0_metallicRoughness.png-18a671befd7b2ca1012b983fafc0f3f3.s3tc.ctex", "res://.godot/imported/material_0_metallicRoughness.png-18a671befd7b2ca1012b983fafc0f3f3.etc2.ctex"]
 
 [params]
 

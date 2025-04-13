@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://dfw66w57aodnj"
 path.s3tc="res://.godot/imported/Material_u1_v1.001_emissive.png-43ef5160d69d236475bf467b6841142b.s3tc.ctex"
+path.etc2="res://.godot/imported/Material_u1_v1.001_emissive.png-43ef5160d69d236475bf467b6841142b.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://assets/marisa_fumo/textures/Material_u1_v1.001_emissive.png"
-dest_files=["res://.godot/imported/Material_u1_v1.001_emissive.png-43ef5160d69d236475bf467b6841142b.s3tc.ctex"]
+dest_files=["res://.godot/imported/Material_u1_v1.001_emissive.png-43ef5160d69d236475bf467b6841142b.s3tc.ctex", "res://.godot/imported/Material_u1_v1.001_emissive.png-43ef5160d69d236475bf467b6841142b.etc2.ctex"]
 
 [params]
 
