@@ -23,10 +23,27 @@ public partial class BeaconDetector : Area3D
     public override void _PhysicsProcess(double delta)
     {
         base._PhysicsProcess(delta);
+        var currentPos = GlobalPosition;
 
         foreach (var beacon in trackedBeacons)
         {
+            // We do a raycast to determine whether the beacon is actually in line-of-sight.
+            var beaconPos = beacon.Key.GlobalPosition;
+            var spaceState = GetWorld3D().DirectSpaceState;
+            var query = PhysicsRayQueryParameters3D.Create(currentPos + new Vector3(0, 0.043f, 0), beaconPos);
+            query.CollideWithAreas = true;
+
+            var result = spaceState.IntersectRay(query);
+
+            if (result.TryGetValue("collider", out var res) && res.As<Node?>() is not Beacon or null)
+            {
+                beacon.Value.Visible = false;
+                continue;
+            }
+
+            beacon.Value.Visible = true;
             beacon.Value.Target = beacon.Key.GlobalPosition;
+            // TODO: Report position to something
         }
     }
 
