@@ -4,6 +4,10 @@ public static class BlockDefs
 {
     private static Wall w = new();
     private static Floor f = new();
+
+    private static Wall wb = new(type: Category.beacon);
+    private static Floor fb = new(type: Category.beacon);
+
     public static readonly Block straight = new()
     {
         Name = ("straight",1),
@@ -15,7 +19,7 @@ public static class BlockDefs
                     [w,w,w,f,f,f,w,w,w],
                     [w,w,w,f,f,f,w,w,w],
                     [w,w,w,f,f,f,w,w,w],
-                    [w,w,w,f,f,f,w,w,w],
+                    [w,w,wb,f,f,f,wb,w,w],
                     [w,w,w,f,f,f,w,w,w],
                     [w,w,w,f,f,f,w,w,w],
                     [w,w,w,f,f,f,w,w,w],
@@ -29,7 +33,7 @@ public static class BlockDefs
         BotAllow = [("cross", 1), ("straight",1), ("line",1), ("room",1), ("solid",1)],
         RightAllow = [("cross", 1), ("straight",1), ("line",1), ("room",1), ("solid",1)],
         LeftAllow = [("cross", 1), ("straight",1), ("line",1), ("room",1), ("solid",1)],
-        Tileset = [ [f,f,f,f,f,f,f,f,f],
+        Tileset = [ [fb,f,f,f,f,f,f,f,fb],
                     [f,f,f,f,f,f,f,f,f],
                     [f,f,f,f,f,f,f,f,f],
                     [f,f,f,f,f,f,f,f,f],
@@ -37,7 +41,7 @@ public static class BlockDefs
                     [f,f,f,f,f,f,f,f,f],
                     [f,f,f,f,f,f,f,f,f],
                     [f,f,f,f,f,f,f,f,f],
-                    [f,f,f,f,f,f,f,f,f],
+                    [fb,f,f,f,f,f,f,f,fb],
                   ]
     };
     public static readonly Block solid = new()
@@ -47,15 +51,15 @@ public static class BlockDefs
         BotAllow = [("cross", 1), ("straight",1), ("line",1), ("room",1), ("solid",1)],
         RightAllow = [("cross", 1), ("straight",1), ("line",1), ("room",1), ("solid",1)],
         LeftAllow = [("cross", 1), ("straight",1), ("line",1), ("room",1), ("solid",1)],
-        Tileset = [ [w,w,w,w,w,w,w,w,w],
+        Tileset = [ [w,w,w,w,wb,w,w,w,w],
                     [w,w,w,w,w,w,w,w,w],
                     [w,w,w,w,w,w,w,w,w],
                     [w,w,w,w,w,w,w,w,w],
+                    [wb,w,w,w,w,w,w,w,wb],
                     [w,w,w,w,w,w,w,w,w],
                     [w,w,w,w,w,w,w,w,w],
                     [w,w,w,w,w,w,w,w,w],
-                    [w,w,w,w,w,w,w,w,w],
-                    [w,w,w,w,w,w,w,w,w],
+                    [w,w,w,w,wb,w,w,w,w],
                   ]
     };
     public static readonly Block cross = new()
@@ -67,11 +71,11 @@ public static class BlockDefs
         LeftAllow = [("cross", 1), ("line",1),("room",1), ("solid",1)],
         Tileset = [ [w,w,w,f,f,f,w,w,w],
                     [w,w,w,f,f,f,w,w,w],
-                    [w,w,w,f,f,f,w,w,w],
+                    [w,w,wb,f,f,f,wb,w,w],
                     [f,f,f,f,f,f,f,f,f],
                     [f,f,f,f,f,f,f,f,f],
                     [f,f,f,f,f,f,f,f,f],
-                    [w,w,w,f,f,f,w,w,w],
+                    [w,w,wb,f,f,f,wb,w,w],
                     [w,w,w,f,f,f,w,w,w],
                     [w,w,w,f,f,f,w,w,w],
                   ]
@@ -85,11 +89,11 @@ public static class BlockDefs
         LeftAllow = [("cross", 1), ("line",1),("room",1), ("solid",1)],
         Tileset = [ [w,w,w,w,w,w,w,w,w],
                     [w,w,w,w,w,w,w,w,w],
-                    [w,w,w,w,w,w,w,w,w],
+                    [w,w,w,w,wb,w,w,w,w],
                     [f,f,f,f,f,f,f,f,f],
                     [f,f,f,f,f,f,f,f,f],
                     [f,f,f,f,f,f,f,f,f],
-                    [w,w,w,w,w,w,w,w,w],
+                    [w,w,w,w,wb,w,w,w,w],
                     [w,w,w,w,w,w,w,w,w],
                     [w,w,w,w,w,w,w,w,w],
                   ]
