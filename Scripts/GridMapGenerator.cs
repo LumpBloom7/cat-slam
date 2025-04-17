@@ -2,6 +2,11 @@ using System;
 using Godot;
 public partial class GridMapGenerator : GridMap
 {
+    private Node BeaconStorageNode = new Node()
+    {
+        Name = "Beacons"
+    };
+
     public override void _Ready()
     {
         WaveFunctionCollapse wave = new WaveFunctionCollapse(3, 3);
@@ -13,6 +18,8 @@ public partial class GridMapGenerator : GridMap
             return;
 
         terrainMinimap.OnMazeGenerated(bitmap);
+
+        GetNode("/root").GetChild(0).CallDeferred(Node.MethodName.AddChild, BeaconStorageNode);
     }
 
 
@@ -41,12 +48,18 @@ public partial class GridMapGenerator : GridMap
                         GD.Print("Wall");
                         sourceId = MeshLibrary.FindItemByName("block-snow-large");
                         tilePosition = new Vector3I(x, 0, z);
+
+                        if (bitmap[z][x].Type.HasFlag(Category.Beacon))
+                            BeaconStorageNode.AddChild(new Beacon { Position = tilePosition + new Vector3(0.5f, 1.5f, 0.5f) - offset });
                         break;
                     case Floor:
                     case Spawn:  // All spawns are also floors
                         GD.Print("Floor");
                         sourceId = MeshLibrary.FindItemByName("block-grass-large");
                         tilePosition = new Vector3I(x, -1, z);
+
+                        if (bitmap[z][x].Type.HasFlag(Category.Beacon))
+                            BeaconStorageNode.AddChild(new Beacon { Position = tilePosition + new Vector3(0.5f, 0.1f, 0.5f) - offset });
 
                         if (bitmap[z][x] is Spawn)
                         {
@@ -55,8 +68,6 @@ public partial class GridMapGenerator : GridMap
                             player.Position = tilePosition with { Y = 0 } - offset + new Vector3(0.5f, 0, 0.5f);
                         }
                         break;
-
-
                 }
                 GD.Print(tilePosition);
                 GD.Print(sourceId);
