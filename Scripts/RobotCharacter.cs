@@ -31,11 +31,13 @@ public partial class RobotCharacter : CharacterBody3D
 
     private GridMap breadcrumbMap = null!;
 
+    public BeaconDetector BeaconDetector { get; private set; } = null!;
+
     public override void _Ready()
     {
         base._Ready();
         breadcrumbMap = GetParent().GetNode<GridMap>("BreadcrumbMap");
-        AddChild(new BeaconDetector(OmnidirectionalSensorRange));
+        AddChild(BeaconDetector = new BeaconDetector(OmnidirectionalSensorRange));
     }
 
     public Vector2 simulateMotion(float omega)

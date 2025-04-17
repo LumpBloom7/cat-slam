@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 
 public partial class BeaconDetector : Area3D
@@ -12,6 +13,13 @@ public partial class BeaconDetector : Area3D
         Monitoring = true;
         AddChild(new CollisionShape3D() { Shape = new SphereShape3D { Radius = radius } });
     }
+
+    public IEnumerable<(System.Numerics.Vector2 Position, float Distance)> GetTrackedBeacons() => trackedBeacons.Values.Select(b =>
+        (
+            new System.Numerics.Vector2(b.Target.X, b.Target.Z),
+            (b.Target with { Y = 0 }).DistanceTo(GlobalPosition with { Y = 0 })
+            )
+    );
 
     public override void _Ready()
     {
@@ -42,8 +50,7 @@ public partial class BeaconDetector : Area3D
             }
 
             beacon.Value.Visible = true;
-            beacon.Value.Target = beacon.Key.GlobalPosition;
-            // TODO: Report position to something
+            beacon.Value.Target = beaconPos;
         }
     }
 
