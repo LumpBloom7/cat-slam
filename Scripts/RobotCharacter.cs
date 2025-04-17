@@ -38,6 +38,14 @@ public partial class RobotCharacter : CharacterBody3D
         AddChild(new BeaconDetector(OmnidirectionalSensorRange));
     }
 
+    public Vector2 simulateMotion(float omega)
+    {
+        float velocity = (leftVel + rightVel) / 2;
+        Vector3 movementVector = (Vector3.Forward * velocity).Rotated(new Vector3(0, 1, 0), omega);
+
+        return new(movementVector.X, movementVector.Z);
+    }
+
     public override void _PhysicsProcess(double delta)
     {
         // Compute acceleration amounts
