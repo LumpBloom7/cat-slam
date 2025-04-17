@@ -47,7 +47,7 @@ public static class BlockDefs
     };
     public static readonly Block solid = new()
     {
-        Name = ("room", 1),
+        Name = ("solid", 1),
         TopAllow = [("cross", 1), ("straight", 1), ("line", 1), ("room", 1), ("solid", 1)],
         BotAllow = [("cross", 1), ("straight", 1), ("line", 1), ("room", 1), ("solid", 1)],
         RightAllow = [("cross", 1), ("straight", 1), ("line", 1), ("room", 1), ("solid", 1)],

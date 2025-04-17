@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using Godot;
 
 public class WaveFunctionCollapse
 {
@@ -225,7 +227,8 @@ public class WaveFunctionCollapse
         // Propagates the effects of the collapse
         return propagateConstraints(pos, map);
     }
-    public void wallOffMap(ref Tile[][] map){
+    public void wallOffMap(ref Tile[][] map)
+    {
         int height = map.Length;
         int width = map[0].Length;
         for (int i = 0; i < height; i++)
@@ -240,7 +243,21 @@ public class WaveFunctionCollapse
         }
     }
 
-    public void setSpawn(ref Tile[][] map){
+    private Vector2I? chooseEmptyCell(ref Tile[][] map, Vector2I rangeBegin, Vector2I rangeEnd)
+    {
+        Vector2I? result = null;
+
+        for (int y = rangeBegin.Y; y < rangeEnd.Y; ++y)
+            for (int x = rangeBegin.X; x < rangeEnd.X; ++x)
+                if (map[y][x] is Floor)
+                    result = (Random.Shared.NextSingle() < 0.25f) ? new Vector2I(x, y) : (result ?? new Vector2I(x, y));
+
+
+        return result;
+    }
+
+    public void setSpawn(ref Tile[][] map)
+    {
         List<(int y, int x)> openPositions = new List<(int y, int x)>();
         for (int y = 0; y < map.Length; y++)
         {
@@ -254,12 +271,143 @@ public class WaveFunctionCollapse
         }
         int r = random.Next(openPositions.Count);
         var spawn = openPositions[r];
+
         map[spawn.y][spawn.x] = new Spawn();
     }
-    public Tile[][] transformIntoTiles(HashSet<(string, int)>[][] map)
+
+    private static Vector2I[] adjacencyOffsets = [new(-1, 0), new(0, -1), new(1, 0), new(0, 1)];
+
+    public bool isConnected(Block source, Block other, Vector2I direction)
     {
+        if (Math.Abs(direction.X) == 1)
+
+            return source.Name.Item1 is "room" or "cross" or "line"
+                && other.Name.Item1 is "room" or "cross" or "line";
+
+        if (Math.Abs(direction.Y) == 1)
+            return source.Name.Item1 is "room" or "cross" or "straight"
+            && other.Name.Item1 is "room" or "cross" or "straight";
+
+        return false;
+    }
+
+    public void connectIslands(Block[][] blockMap, ref Tile[][] map)
+    {
+        List<HashSet<Vector2I>> sets = [];
+        List<Vector2I> queue = [];
+
+        for (int y = 0; y < blockMap.Length; ++y)
+            for (int x = 0; x < blockMap[y].Length; ++x)
+                if (blockMap[y][x].Name.Item1 != "solid") queue.Add(new(x, y));
+
+        while (queue.Count > 0)
+        {
+            HashSet<Vector2I> inGroup = [];
+            var first = queue[0];
+
+            checkConnectionRecursive(blockMap, first, first, [], inGroup);
+            sets.Add(inGroup);
+
+            foreach (var block in inGroup)
+                queue.Remove(block);
+        }
+
+        while (sets.Count > 1)
+        {
+            var firstSet = sets[0];
+            var secondSet = sets[1];
+
+            Vector2I startBlock = firstSet.ToArray()[Random.Shared.Next(firstSet.Count)];
+            Vector2I endBlock = secondSet.ToArray()[Random.Shared.Next(secondSet.Count)];
+
+            var start = chooseEmptyCell(ref map, startBlock * 9, (startBlock + new Vector2I(1, 1)) * 9);
+            var end = chooseEmptyCell(ref map, endBlock * 9, (endBlock + new Vector2I(1, 1)) * 9);
+
+            Debug.Assert(start is not null);
+            Debug.Assert(end is not null);
+
+            performAstar(start.Value, end.Value, ref map);
+
+            var removeTarget = (Random.Shared.NextSingle() < 0.5f) ? firstSet : secondSet;
+
+            sets.Remove(removeTarget);
+        }
+    }
+
+    private void performAstar(Vector2I origin, Vector2I dest, ref Tile[][] map)
+    {
+        PriorityQueue<Vector2I, int> priorityQueue = new();
+        priorityQueue.Enqueue(origin, 0);
+
+        Dictionary<Vector2I, Vector2I> cameFrom = [];
+
+        Dictionary<Vector2I, int> gScore = [];
+        gScore[origin] = 0;
+
+        while (priorityQueue.Count > 0)
+        {
+            var current = priorityQueue.Dequeue();
+
+            if (current == dest)
+                break;
+
+            var neighbours = adjacencyOffsets.Select(o => current + o);
+
+            foreach (var n in neighbours)
+            {
+                int tentativeScore = gScore[current] + 1;
+
+                if (tentativeScore >= gScore.GetValueOrDefault(n, int.MaxValue))
+                    continue;
+
+                cameFrom[n] = current;
+                gScore[n] = tentativeScore;
+                priorityQueue.Enqueue(n, dest.DistanceSquaredTo(n) + (map[n.Y][n.X] is Wall ? 100 : 0));
+            }
+        }
+
+        var _current = dest;
+
+        while (_current != origin)
+        {
+            var next = cameFrom[_current];
+            map[next.Y][next.X] = new Floor();
+
+            _current = next;
+        }
+    }
 
 
+
+    public void checkConnectionRecursive(Block[][] blockMap, Vector2I first, Vector2I second, HashSet<Vector2I> visited, HashSet<Vector2I> inGroup)
+    {
+        if (second.Y < 0 || second.Y >= blockMap.Length)
+            return;
+
+        if (second.X < 0 || second.X >= blockMap[second.Y].Length)
+            return;
+
+        if (visited.Contains(second))
+            return;
+
+        visited.Add(second);
+        Block firstBlock = blockMap[first.Y][first.X];
+        Block secondBlock = blockMap[second.Y][second.X];
+
+        if (first == second || isConnected(firstBlock, secondBlock, second - first))
+        {
+            inGroup.Add(second);
+
+            foreach (var offset in adjacencyOffsets)
+            {
+                var newOffset = second + offset;
+                checkConnectionRecursive(blockMap, second, newOffset, visited, inGroup);
+            }
+        }
+    }
+
+    public Tile[][] transformIntoTiles(Block[][] map)
+    {
         int newHeight = Height * BLOCK_LENGTH;
         int newWidth = Width * BLOCK_LENGTH;
         Tile[][] finalTieset = new Tile[newHeight][];
@@ -272,7 +420,7 @@ public class WaveFunctionCollapse
         {
             for (int j = 0; j < map[i].Length; j++)
             {
-                Tile[][] currentTileset = BlockDefs.AllBlocks[map[i][j].ElementAt(0)].Tileset;
+                Tile[][] currentTileset = map[i][j].Tileset;
                 for (int n = 0; n < currentTileset.Length; n++)
                 {
                     for (int k = 0; k < currentTileset[n].Length; k++)
@@ -284,13 +432,16 @@ public class WaveFunctionCollapse
                 }
             }
         }
-        // Post processing steps 
+        // Post processing steps
 
         // Walling off the edges of the map
         wallOffMap(ref finalTieset);
 
         // Setting the starting position
         setSpawn(ref finalTieset);
+
+        // Connecting islands
+        connectIslands(map, ref finalTieset);
 
         return finalTieset;
     }
@@ -319,7 +470,7 @@ public class WaveFunctionCollapse
             bool success = solveGrid(map);
 
             if (success)
-                return transformIntoTiles(map);
+                return transformIntoTiles([.. map.Select(row => row.Select(h => BlockDefs.AllBlocks[h.Single()]).ToArray())]);
         }
 
         Console.WriteLine($"Failed to generate a valid solution after {MAX_ATTEMPTS} attempts.");
