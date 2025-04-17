@@ -7,6 +7,8 @@ public partial class BeaconDetector : Area3D
 {
     private Dictionary<Beacon, Line3D> trackedBeacons = [];
 
+    private Beacon[] allBeacons = null!;
+
     public BeaconDetector(float radius = 5)
     {
         Name = "Omnidirectional sensor";
@@ -18,7 +20,7 @@ public partial class BeaconDetector : Area3D
         (
             new System.Numerics.Vector2(b.Target.X, b.Target.Z),
             (b.Target with { Y = 0 }).DistanceTo(GlobalPosition with { Y = 0 })
-            )
+        )
     );
 
     public override void _Ready()
@@ -26,6 +28,19 @@ public partial class BeaconDetector : Area3D
         base._Ready();
         AreaEntered += OnBeaconEntered;
         AreaExited += OnBeaconLeave;
+
+        var rootNode = GetNode("/root");
+        allBeacons = [.. rootNode.GetDescendants<Beacon>(true)];
+    }
+
+    public IEnumerable<(System.Numerics.Vector2 Position, float Distance)> GetBeaconsInfoFrom(float x, float y)
+    {
+        // Do we care about line of sight?
+        foreach (var b in allBeacons)
+        {
+            var beaconPos = b.GlobalPosition;
+            yield return (new System.Numerics.Vector2(beaconPos.X, beaconPos.Z), (beaconPos with { Y = 0 }).DistanceTo(new Vector3(x, 0, y)));
+        }
     }
 
     public override void _PhysicsProcess(double delta)
