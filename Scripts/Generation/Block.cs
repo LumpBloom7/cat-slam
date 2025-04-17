@@ -1,40 +1,30 @@
 using System;
 using System.Collections.Generic;
 
-public interface Tile { }
+public interface Tile
+{
+    Category Type { get; }
+}
 
+[Flags]
 public enum Category
 {
-    normal,
-    beacon
+    Normal = 0,
+    Beacon = 1,
 }
 
-public struct Floor : Tile
+public readonly record struct Floor() : Tile
 {
-    public float Gradient { get; }
-    public Category Type { get; }
-
-    public Floor(float gradient = 0, Category type = Category.normal)
-    {
-        Gradient = gradient;
-        Type = type;
-    }
+    public float Gradient { get; init; } = 0;
+    public Category Type { get; init; } = Category.Normal;
 }
-public struct Spawn : Tile
+public readonly record struct Spawn() : Tile
 {
-    public Category Type { get; }
-    public Spawn(Category type = Category.normal){
-        Type = type;
-    }
+    public Category Type { get; init; } = Category.Normal;
 }
-public struct Wall : Tile
+public readonly record struct Wall() : Tile
 {
-    public Category Type { get; }
-
-    public Wall(Category type = Category.normal)
-    {
-        Type = type;
-    }
+    public Category Type { get; init; } = Category.Normal;
 }
 
 public class Block
