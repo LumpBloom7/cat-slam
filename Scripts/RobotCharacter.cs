@@ -38,33 +38,12 @@ public partial class RobotCharacter : CharacterBody3D
         AddChild(new BeaconDetector(OmnidirectionalSensorRange));
     }
 
-    public Vector2 simulateMotion(float x, float y, float omega)
+    public Vector2 simulateMotion(float omega)
     {
-        Vector3 originalPosition = Position;
-        Vector3 originalRotation = Rotation;
-        Vector3 originalVelocity = Velocity;
-
-        Position = Position with
-        {
-            X = x,
-            Z = y
-        };
-
-        Rotation = Rotation with { Y = y };
-
         float velocity = (leftVel + rightVel) / 2;
         Vector3 movementVector = (Vector3.Forward * velocity).Rotated(new Vector3(0, 1, 0), omega);
-        Velocity = movementVector;
 
-        MoveAndSlide();
-
-        var newPos = Position;
-
-        Position = originalPosition;
-        Rotation = originalRotation;
-        Velocity = originalVelocity;
-
-        return new(newPos.X, newPos.Z);
+        return new(movementVector.X, movementVector.Z);
     }
 
     public override void _PhysicsProcess(double delta)
