@@ -64,7 +64,7 @@ public partial class GridMapGenerator : GridMap
                         if (bitmap[z][x] is Spawn)
                         {
                             var player = GetParent().GetNode<RobotCharacter>("Robot");
-                            player.InitPosition(new Vector2(tilePosition.X - offset.X + 0.5f, tilePosition.Y - offset.Y + 0.5f));
+                            player.InitPosition(new Vector2(tilePosition.X - offset.X + 0.5f, tilePosition.Z - offset.Z + 0.5f));
                         }
                         break;
                 }
