@@ -119,11 +119,14 @@ public partial class RobotCharacter : CharacterBody3D
         EmitSignal(SignalName.PositionChanged, Position);
 
         // Update Kalman filter
-        updateKalmanFilter(rotAmount, velocity, delta);
+        // Mathematical rotation is counterclockwise
+        updateKalmanFilter(Rotation.Y, velocity, delta);
 
-        GD.Print(kalmanFilter?.Mu);
         GD.Print(Position.X);
         GD.Print(Position.Z);
+
+        GD.Print(kalmanFilter?.Mu);
+
 
         //GD.Print(kalmanFilter?.Sigma);
     }
@@ -136,16 +139,24 @@ public partial class RobotCharacter : CharacterBody3D
         int count = 0;
         foreach (var sensor in BeaconDetector.GetTrackedBeacons())
         {
-            float bearing = MathF.Atan2(sensor.Position.Y - Position.Y, sensor.Position.X - Position.X) - omega;
+            //GD.Print($"SensorX: {sensor.Position.X}");
+            //GD.Print($"SensorY: {sensor.Position.Y}");
 
-            (float sin, float cos) = MathF.SinCos(bearing);
+            float bearing = MathF.Atan2(sensor.Position.Y - Position.Z, sensor.Position.X - Position.X);
 
-            Vector2 estimatedPosition = new(sensor.Distance * sin, sensor.Distance * cos);
+            float bearing2 = bearing - MathF.PI * 0.5f;
+            //GD.Print($"Bearing: {bearing2}");
+
+            (float sin, float cos) = MathF.SinCos(bearing2);
+
+            Vector2 estimatedPosition = new Vector2(sensor.Distance * sin, -sensor.Distance * cos) + new Vector2(sensor.Position.X, sensor.Position.Y);
             sum += estimatedPosition;
             ++count;
         }
 
         Vector2 avgPos = sum / Math.Max(1, count);
+
+        //GD.Print($"Average position: {avgPos}");
 
         var z = MathNet.Numerics.LinearAlgebra.Single.Vector.Build.Dense([avgPos.X, avgPos.Y, omega]);
 
