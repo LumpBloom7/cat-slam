@@ -1,4 +1,5 @@
 using System;
+using Godot;
 using Matrix = MathNet.Numerics.LinearAlgebra.Matrix<float>;
 using Vector = MathNet.Numerics.LinearAlgebra.Vector<float>;
 
@@ -28,23 +29,28 @@ public class KalmanFilter
         this.Sigma = Sigma;
     }
 
-    // u is the current velocity
+    // u is the current velocity/angularVelocity
     // z is the current sensor model
     public void Update(Vector u, Vector z, double dt)
     {
         // This is the state transition matrix that models what the subject does to itself through control
+        // Flipping our sine and cosines are intentional, since our rotation space have 0 pointing upwards
+        // Negating our cosine/sine is intentional since Y points downwards in our simulation space
         Matrix B = Matrix.Build.DenseOfArray(new float[,]{
-            {(float)dt * MathF.Cos(Mu[2]), 0},
-            {(float)dt * MathF.Sin(Mu[2]), 0},
+            {(float)dt * -MathF.Sin(Mu[2]), 0},
+            {(float)dt * -MathF.Cos(Mu[2]), 0},
             {0, (float)dt}
         });
+
+        //GD.Print(B);
+        //GD.Print(u);
 
         //# Prediction
         Vector d_mu_t = A * Mu + B * u; // This is the change of our current state
         Matrix d_Sigma_t = A * Sigma * A.Transpose() + R; // This is the noise of the of our prediction
 
         // Correction
-        Matrix K_t = d_Sigma_t * C.Transpose() * (C * d_Sigma_t * C.Transpose() + Q);
+        Matrix K_t = d_Sigma_t * C.Transpose() * (C * d_Sigma_t * C.Transpose() + Q).Inverse();
         Vector mu_t = d_mu_t + K_t * (z - C * d_mu_t);
         Matrix Sigma_t = (I - K_t * C) * d_Sigma_t;
 
