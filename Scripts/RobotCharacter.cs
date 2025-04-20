@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using Godot;
 
@@ -37,11 +38,14 @@ public partial class RobotCharacter : CharacterBody3D
 
     private KalmanFilter? kalmanFilter { get; set; } = null;
 
+    private Node3D ghostNode = null!;
+
     public override void _Ready()
     {
         base._Ready();
         breadcrumbMap = GetParent().GetNode<GridMap>("BreadcrumbMap");
         AddChild(BeaconDetector = new BeaconDetector(OmnidirectionalSensorRange));
+        ghostNode = GetParent().GetNode<Node3D>("GhostRobot");
     }
 
     public void InitPosition(Vector2 position)
@@ -122,12 +126,6 @@ public partial class RobotCharacter : CharacterBody3D
         // Mathematical rotation is counterclockwise
         updateKalmanFilter(Rotation.Y, velocity, delta);
 
-        GD.Print(Position.X);
-        GD.Print(Position.Z);
-
-        GD.Print(kalmanFilter?.Mu);
-
-
         //GD.Print(kalmanFilter?.Sigma);
     }
 
@@ -161,5 +159,8 @@ public partial class RobotCharacter : CharacterBody3D
         var z = MathNet.Numerics.LinearAlgebra.Single.Vector.Build.Dense([avgPos.X, avgPos.Y, omega]);
 
         kalmanFilter?.Update(u, z, dt);
+        Debug.Assert(kalmanFilter is not null);
+        ghostNode.Position = Position with { X = kalmanFilter.Mu[0], Z = kalmanFilter.Mu[1] };
+        ghostNode.Rotation = new Vector3(0, kalmanFilter.Mu[2], 0);
     }
 }
