@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Godot;
 
 public partial class RobotCharacter : CharacterBody3D
@@ -33,11 +35,23 @@ public partial class RobotCharacter : CharacterBody3D
 
     public BeaconDetector BeaconDetector { get; private set; } = null!;
 
+    private KalmanFilter? kalmanFilter { get; set; } = null;
+
     public override void _Ready()
     {
         base._Ready();
         breadcrumbMap = GetParent().GetNode<GridMap>("BreadcrumbMap");
         AddChild(BeaconDetector = new BeaconDetector(OmnidirectionalSensorRange));
+    }
+
+    public void InitPosition(Vector2 position)
+    {
+        Position = new Vector3(position.X, 0, position.Y);
+
+        // init initial state of KalmanFilter
+        var mu = MathNet.Numerics.LinearAlgebra.Vector<float>.Build.Dense([position.X, position.Y, 0]);
+        var sigma = MathNet.Numerics.LinearAlgebra.Matrix<float>.Build.DenseDiagonal(3, 0);
+        kalmanFilter = new KalmanFilter(mu, sigma);
     }
 
     public Vector2 simulateMotion(float omega)
@@ -103,5 +117,38 @@ public partial class RobotCharacter : CharacterBody3D
         breadcrumbMap.SetCellItem(new Vector3I(x, 0, z), 0);
 
         EmitSignal(SignalName.PositionChanged, Position);
+
+        // Update Kalman filter
+        updateKalmanFilter(rotAmount, velocity, delta);
+
+        GD.Print(kalmanFilter?.Mu);
+        GD.Print(Position.X);
+        GD.Print(Position.Z);
+
+        //GD.Print(kalmanFilter?.Sigma);
+    }
+
+    private void updateKalmanFilter(float omega, float vel, double dt)
+    {
+        var u = MathNet.Numerics.LinearAlgebra.Single.Vector.Build.Dense([vel, omega]);
+
+        Vector2 sum = Vector2.Zero;
+        int count = 0;
+        foreach (var sensor in BeaconDetector.GetTrackedBeacons())
+        {
+            float bearing = MathF.Atan2(sensor.Position.Y - Position.Y, sensor.Position.X - Position.X) - omega;
+
+            (float sin, float cos) = MathF.SinCos(bearing);
+
+            Vector2 estimatedPosition = new(sensor.Distance * sin, sensor.Distance * cos);
+            sum += estimatedPosition;
+            ++count;
+        }
+
+        Vector2 avgPos = sum / Math.Max(1, count);
+
+        var z = MathNet.Numerics.LinearAlgebra.Single.Vector.Build.Dense([avgPos.X, avgPos.Y, omega]);
+
+        kalmanFilter?.Update(u, z, dt);
     }
 }
