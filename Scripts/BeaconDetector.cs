@@ -52,7 +52,7 @@ public partial class BeaconDetector : Area3D
         {
             // We do a raycast to determine whether the beacon is actually in line-of-sight.
             var beaconPos = beacon.Key.GlobalPosition;
-            var spaceState = GetWorld3D().DirectSpaceState;
+            /* var spaceState = GetWorld3D().DirectSpaceState;
             var query = PhysicsRayQueryParameters3D.Create(currentPos + new Vector3(0, 0.043f, 0), beaconPos);
             query.CollideWithAreas = true;
 
@@ -63,7 +63,7 @@ public partial class BeaconDetector : Area3D
                 beacon.Value.Visible = false;
                 continue;
             }
-
+ */
             beacon.Value.Visible = true;
             beacon.Value.Target = beaconPos;
         }
