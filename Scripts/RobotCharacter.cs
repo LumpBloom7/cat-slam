@@ -157,7 +157,6 @@ public partial class RobotCharacter : CharacterBody3D
         }
         else
         {
-            GD.Print("printing");
             var z = MathNet.Numerics.LinearAlgebra.Single.Vector.Build.Dense([avgPos.X, -avgPos.Y, theta.ToMathematicalAngle()]);
             kalmanFilter?.Update(u, z, dt);
         }
