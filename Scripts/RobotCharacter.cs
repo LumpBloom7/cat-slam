@@ -164,5 +164,11 @@ public partial class RobotCharacter : CharacterBody3D
         Debug.Assert(kalmanFilter is not null);
         ghostNode.Position = Position with { X = kalmanFilter.Mu[0], Z = -kalmanFilter.Mu[1] };
         ghostNode.Rotation = new Vector3(0, kalmanFilter.Mu[2].FromMathematicalAngle(), 0);
+
+        // Update breadcrumbs
+        // The breadcrumb grid is already offseted, so we don't haee to do it locally.
+        int xPos = (int)MathF.Round(ghostNode.Position.X / 0.3f);
+        int zPos = (int)MathF.Round(ghostNode.Position.Z / 0.3f);
+        breadcrumbMap.SetCellItem(new Vector3I(xPos, 1, zPos), 1);
     }
 }
