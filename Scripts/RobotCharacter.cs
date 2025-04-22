@@ -1,7 +1,5 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using Godot;
 
 public partial class RobotCharacter : CharacterBody3D
@@ -53,7 +51,7 @@ public partial class RobotCharacter : CharacterBody3D
         Position = new Vector3(position.X, 0, position.Y);
 
         // init initial state of KalmanFilter
-        var mu = MathNet.Numerics.LinearAlgebra.Vector<float>.Build.Dense([position.X, position.Y, 0]);
+        var mu = MathNet.Numerics.LinearAlgebra.Vector<float>.Build.Dense([position.X, -position.Y, 0f.ToMathematicalAngle()]);
         var sigma = MathNet.Numerics.LinearAlgebra.Matrix<float>.Build.DenseDiagonal(3, 0);
         kalmanFilter = new KalmanFilter(mu, sigma);
     }
@@ -124,12 +122,12 @@ public partial class RobotCharacter : CharacterBody3D
 
         // Update Kalman filter
         // Mathematical rotation is counterclockwise
-        updateKalmanFilter(Rotation.Y, velocity, delta);
+        updateKalmanFilter(rotAmount, velocity, delta, Rotation.Y);
 
         //GD.Print(kalmanFilter?.Sigma);
     }
 
-    private void updateKalmanFilter(float omega, float vel, double dt)
+    private void updateKalmanFilter(float omega, float vel, double dt, float theta)
     {
         var u = MathNet.Numerics.LinearAlgebra.Single.Vector.Build.Dense([vel, omega]);
 
@@ -140,14 +138,12 @@ public partial class RobotCharacter : CharacterBody3D
             //GD.Print($"SensorX: {sensor.Position.X}");
             //GD.Print($"SensorY: {sensor.Position.Y}");
 
-            float bearing = MathF.Atan2(sensor.Position.Y - Position.Z, sensor.Position.X - Position.X);
+            // We flip the sign of Y
+            float bearing = MathF.Atan2(-(sensor.Position.Y - Position.Z), sensor.Position.X - Position.X);
 
-            float bearing2 = bearing - MathF.PI * 0.5f;
-            //GD.Print($"Bearing: {bearing2}");
+            (float sin, float cos) = MathF.SinCos(bearing);
 
-            (float sin, float cos) = MathF.SinCos(bearing2);
-
-            Vector2 estimatedPosition = new Vector2(sensor.Distance * sin, -sensor.Distance * cos) + new Vector2(sensor.Position.X, sensor.Position.Y);
+            Vector2 estimatedPosition = new Vector2(-sensor.Distance * cos, sensor.Distance * sin) + new Vector2(sensor.Position.X, sensor.Position.Y);
             sum += estimatedPosition;
             ++count;
         }
@@ -155,12 +151,18 @@ public partial class RobotCharacter : CharacterBody3D
         Vector2 avgPos = sum / Math.Max(1, count);
 
         //GD.Print($"Average position: {avgPos}");
-
-        var z = MathNet.Numerics.LinearAlgebra.Single.Vector.Build.Dense([avgPos.X, avgPos.Y, omega]);
-
-        kalmanFilter?.Update(u, z, dt);
+        if (count == 0)
+        {
+            kalmanFilter?.Update(u, null, dt);
+        }
+        else
+        {
+            GD.Print("printing");
+            var z = MathNet.Numerics.LinearAlgebra.Single.Vector.Build.Dense([avgPos.X, -avgPos.Y, theta.ToMathematicalAngle()]);
+            kalmanFilter?.Update(u, z, dt);
+        }
         Debug.Assert(kalmanFilter is not null);
-        ghostNode.Position = Position with { X = kalmanFilter.Mu[0], Z = kalmanFilter.Mu[1] };
-        ghostNode.Rotation = new Vector3(0, kalmanFilter.Mu[2], 0);
+        ghostNode.Position = Position with { X = kalmanFilter.Mu[0], Z = -kalmanFilter.Mu[1] };
+        ghostNode.Rotation = new Vector3(0, kalmanFilter.Mu[2].FromMathematicalAngle(), 0);
     }
 }

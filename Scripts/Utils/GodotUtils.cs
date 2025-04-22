@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Godot;
 
@@ -15,4 +16,6 @@ public static class GodotUtils
                 child.GetDescendants<T>(recursive);
         }
     }
+
+    public static Vector2 To2D(this Vector3 vector3) => new(vector3.X, vector3.Y);
 }

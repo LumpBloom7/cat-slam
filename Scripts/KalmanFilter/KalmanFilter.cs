@@ -31,14 +31,12 @@ public class KalmanFilter
 
     // u is the current velocity/angularVelocity
     // z is the current sensor model
-    public void Update(Vector u, Vector z, double dt)
+    public void Update(Vector u, Vector? z, double dt)
     {
         // This is the state transition matrix that models what the subject does to itself through control
-        // Flipping our sine and cosines are intentional, since our rotation space have 0 pointing upwards
-        // Negating our cosine/sine is intentional since Y points downwards in our simulation space
         Matrix B = Matrix.Build.DenseOfArray(new float[,]{
-            {(float)dt * -MathF.Sin(Mu[2]), 0},
-            {(float)dt * -MathF.Cos(Mu[2]), 0},
+            {(float)dt * MathF.Cos(Mu[2]), 0},
+            {(float)dt * MathF.Sin(Mu[2]), 0},
             {0, (float)dt}
         });
 
@@ -48,6 +46,13 @@ public class KalmanFilter
         //# Prediction
         Vector d_mu_t = A * Mu + B * u; // This is the change of our current state
         Matrix d_Sigma_t = A * Sigma * A.Transpose() + R; // This is the noise of the of our prediction
+
+        if (z is null)
+        {
+            Mu = d_mu_t;
+            Sigma = d_Sigma_t;
+            return;
+        }
 
         // Correction
         Matrix K_t = d_Sigma_t * C.Transpose() * (C * d_Sigma_t * C.Transpose() + Q).Inverse();
