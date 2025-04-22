@@ -59,7 +59,7 @@ public partial class GridMapGenerator : GridMap
                         tilePosition = new Vector3I(x, -1, z);
 
                         if (bitmap[z][x].Type.HasFlag(Category.Beacon))
-                            BeaconStorageNode.AddChild(new Beacon { Position = tilePosition + new Vector3(0.5f, 0.1f, 0.5f) - offset });
+                            BeaconStorageNode.AddChild(new Beacon { Position = tilePosition + new Vector3(0.5f, 1.1f, 0.5f) - offset });
 
                         if (bitmap[z][x] is Spawn)
                         {
