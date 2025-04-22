@@ -437,11 +437,11 @@ public class WaveFunctionCollapse
         // Walling off the edges of the map
         wallOffMap(ref finalTieset);
 
-        // Setting the starting position
-        setSpawn(ref finalTieset);
-
         // Connecting islands
         connectIslands(map, ref finalTieset);
+
+        // Setting the starting position
+        setSpawn(ref finalTieset);
 
         return finalTieset;
     }
