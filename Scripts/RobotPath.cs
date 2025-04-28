@@ -40,7 +40,7 @@ public partial class RobotPath : Node3D
             return;
         }
 
-        if (lastPosition == position)
+        if (lastPosition.Value.IsEqualApprox(position))
             return;
 
         if (dotted)
@@ -62,11 +62,16 @@ public partial class RobotPath : Node3D
         float length = (position with { Y = 0 }).DistanceTo(lastPosition!.Value with { Y = 0 });
 
         Vector3 inBetweenPos = position.Lerp(lastPosition.Value, 0.5f);
+
+        if (inBetweenPos.IsEqualApprox(position))
+            return;
+
         var mesh = new LineMesh
         {
             Mesh = cylinderMesh,
+            Scale = new(1, length, 1),
         };
-        mesh.Scale = mesh.Scale with { Y = length };
+
         AddChild(mesh);
         mesh.LookAtFromPosition(inBetweenPos, position);
 
