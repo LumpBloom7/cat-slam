@@ -30,6 +30,9 @@ public partial class RobotCharacter : CharacterBody3D
     [Signal]
     public delegate void PositionChangedEventHandler(Vector3 position);
 
+    [Signal]
+    public delegate void GhostPositionChangedEventHandler(Vector3 position);
+
     private GridMap breadcrumbMap = null!;
 
     public BeaconDetector BeaconDetector { get; private set; } = null!;
@@ -41,7 +44,6 @@ public partial class RobotCharacter : CharacterBody3D
     public override void _Ready()
     {
         base._Ready();
-        breadcrumbMap = GetParent().GetNode<GridMap>("BreadcrumbMap");
         AddChild(BeaconDetector = new BeaconDetector(OmnidirectionalSensorRange));
         ghostNode = GetParent().GetNode<Node3D>("GhostRobot");
     }
@@ -110,14 +112,6 @@ public partial class RobotCharacter : CharacterBody3D
 
         EmitSignal(SignalName.LeftMotorValueChanged, leftVel);
         EmitSignal(SignalName.RightMotorValueChanged, rightVel);
-
-
-        // Update breadcrumbs
-        // The breadcrumb grid is already offseted, so we don't haee to do it locally.
-        int x = (int)MathF.Round(Position.X / 0.3f);
-        int z = (int)MathF.Round(Position.Z / 0.3f);
-        breadcrumbMap.SetCellItem(new Vector3I(x, 0, z), 0);
-
         EmitSignal(SignalName.PositionChanged, Position);
 
         // Update Kalman filter
@@ -164,10 +158,6 @@ public partial class RobotCharacter : CharacterBody3D
         ghostNode.Position = Position with { X = kalmanFilter.Mu[0], Z = -kalmanFilter.Mu[1] };
         ghostNode.Rotation = new Vector3(0, kalmanFilter.Mu[2].FromMathematicalAngle(), 0);
 
-        // Update breadcrumbs
-        // The breadcrumb grid is already offseted, so we don't haee to do it locally.
-        int xPos = (int)MathF.Round(ghostNode.Position.X / 0.3f);
-        int zPos = (int)MathF.Round(ghostNode.Position.Z / 0.3f);
-        breadcrumbMap.SetCellItem(new Vector3I(xPos, 1, zPos), 1);
+        EmitSignal(SignalName.GhostPositionChanged, ghostNode.Position);
     }
 }
