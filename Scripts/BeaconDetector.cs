@@ -77,6 +77,8 @@ public partial class BeaconDetector : Area3D
         GD.Print("Beacon entered");
         GD.Print(area3D.GlobalPosition);
         AddChild(trackedBeacons[b] = new Line3D());
+
+        trackedBeacons[b].Target = area3D.GlobalPosition;
     }
 
     public void OnBeaconLeave(Area3D area3D)

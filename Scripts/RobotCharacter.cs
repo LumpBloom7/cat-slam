@@ -132,7 +132,7 @@ public partial class RobotCharacter : CharacterBody3D
         p3.Y *= -1;
 
         float theata = MathF.Acos(p2.X / p2.Length());
-        (float sin, float cos) = MathF.SinCos(-theata);
+        (float sin, float cos) = MathF.SinCos(theata);
 
         var np2 = new Vector2(p2.X * cos - p2.Y * sin, p2.X * sin + p2.Y * cos);
         var np3 = new Vector2(p3.X * cos - p3.Y * sin, p3.X * sin + p3.Y * cos);
@@ -144,9 +144,12 @@ public partial class RobotCharacter : CharacterBody3D
         float p4x = (r1 * r1 - r2 * r2 + np2.X * np2.X) / (2 * np2.X);
         float p4y = (r1 * r1 - r3 * r3 + np3.X * np3.X + np3.Y * np3.Y) / (2 * np3.Y) - (np3.X / np3.Y) * p4x;
 
+
         if (!float.IsFinite(p4y))
         {
             Console.WriteLine($"Triangulation Y is NaN, ignoring attempt");
+            Console.WriteLine(np2);
+            Console.WriteLine(np3);
             return null;
         }
 
@@ -156,11 +159,15 @@ public partial class RobotCharacter : CharacterBody3D
             return null;
         }
 
-        (float cSin, float cCos) = MathF.SinCos(theata);
+        (float cSin, float cCos) = MathF.SinCos(-theata);
 
         Vector2 p4 = new(p4x * cCos - p4y * cSin, p4x * cSin + p4y * cCos);
 
-        return new(p4.X + offset.X, -p4.Y + offset.Y);
+        var res = new Vector2(p4.X + offset.X, -p4.Y + offset.Y);
+
+        Console.WriteLine(res);
+
+        return new Vector2(p4.X + offset.X, -p4.Y + offset.Y);
     }
 
     // Iterative, using 'i' as bitmask to choose each combo members
