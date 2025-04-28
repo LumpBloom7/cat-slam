@@ -131,8 +131,8 @@ public partial class RobotCharacter : CharacterBody3D
         var p3 = trackedBeacons[2].Position - offset;
         p3.Y *= -1;
 
-        float theata = MathF.Acos(p2.X / p2.Length());
-        (float sin, float cos) = MathF.SinCos(theata);
+        float theata = MathF.Atan2(p2.Y, p2.X);
+        (float sin, float cos) = MathF.SinCos(-theata);
 
         var np2 = new Vector2(p2.X * cos - p2.Y * sin, p2.X * sin + p2.Y * cos);
         var np3 = new Vector2(p3.X * cos - p3.Y * sin, p3.X * sin + p3.Y * cos);
@@ -159,7 +159,7 @@ public partial class RobotCharacter : CharacterBody3D
             return null;
         }
 
-        (float cSin, float cCos) = MathF.SinCos(-theata);
+        (float cSin, float cCos) = MathF.SinCos(theata);
 
         Vector2 p4 = new(p4x * cCos - p4y * cSin, p4x * cSin + p4y * cCos);
 
@@ -188,11 +188,20 @@ public partial class RobotCharacter : CharacterBody3D
         return result;
     }
 
+    private bool isColinear(List<(System.Numerics.Vector2 Position, float Distance)> beacons)
+    {
+        var pos = beacons.Select(b => b.Position).ToArray();
+        float det = pos[0].X * (pos[1].Y - pos[2].Y) + pos[1].X * (pos[2].Y - pos[0].Y) + pos[2].X * (pos[0].Y - pos[1].Y);
+
+        Console.WriteLine(det);
+        return det == 0;
+    }
+
     private void updateKalmanFilter(float omega, float vel, double dt, float theta)
     {
         var u = MathNet.Numerics.LinearAlgebra.Single.Vector.Build.Dense([vel, omega]);
 
-        var combinations = GetAllCombos(BeaconDetector.GetTrackedBeacons().ToList()).Where(c => c.Count == 3);
+        var combinations = GetAllCombos(BeaconDetector.GetTrackedBeacons().ToList()).Where(c => c.Count == 3).Where(c => !isColinear(c)).ToList();
 
         var items = combinations.Select(k => triangulate([.. k])).Where(i => i.HasValue).Select(i => i!.Value).ToArray();
 

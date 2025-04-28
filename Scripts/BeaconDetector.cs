@@ -8,11 +8,13 @@ public partial class BeaconDetector : Area3D
     private Dictionary<Beacon, Line3D> trackedBeacons = [];
 
     private Beacon[] allBeacons = null!;
+    private float radius = 5;
 
     public BeaconDetector(float radius = 5)
     {
         Name = "Omnidirectional sensor";
         Monitoring = true;
+        this.radius = radius;
         AddChild(new CollisionShape3D() { Shape = new SphereShape3D { Radius = radius } });
     }
 
@@ -21,7 +23,7 @@ public partial class BeaconDetector : Area3D
             new System.Numerics.Vector2(b.Target.X, b.Target.Z),
             (b.Target with { Y = 0 }).DistanceTo(GlobalPosition with { Y = 0 })
         )
-    );
+    ).Where(t => t.Item2 <= radius);
 
     public override void _Ready()
     {
@@ -64,7 +66,7 @@ public partial class BeaconDetector : Area3D
                 continue;
             }
  */
-            beacon.Value.Visible = true;
+            beacon.Value.Visible = (beacon.Key.GlobalPosition with { Y = 0 }).DistanceTo(GlobalPosition with { Y = 0 }) <= radius;
             beacon.Value.Target = beaconPos;
         }
     }
