@@ -43,17 +43,22 @@ public partial class SimulatedLidar : RayCast3D
 
         timeSinceLastPulse = 0;
 
-        var point = GetCollisionPoint();
 
-        float distance = GlobalPosition.DistanceTo(point);
         bool isColliding = IsColliding();
 
         if (!isColliding)
+        {
             updateLabel(-TargetPosition.Z);
+            EmitSignalRayCasted(GlobalPosition, GlobalPosition + TargetPosition.Rotated(new(0, 1, 0), GlobalRotation.Y), isColliding);
+        }
         else
-            updateLabel((float)Math.Max(0, distance + Random.Shared.NextSingle() * NoiseVariance));
+        {
+            var point = GetCollisionPoint();
 
-        EmitSignalRayCasted(GlobalPosition, point, isColliding);
+            float distance = GlobalPosition.DistanceTo(point);
+            updateLabel((float)Math.Max(0, distance + Random.Shared.NextSingle() * NoiseVariance));
+            EmitSignalRayCasted(GlobalPosition, point, isColliding);
+        }
     }
 
     private void updateLabel(float distance)
