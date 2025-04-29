@@ -14,10 +14,22 @@ public partial class SimulatedLidar : RayCast3D
 
     private Label3D distanceLabel = null!;
 
+    [Signal]
+    public delegate void RayCastedEventHandler(Vector3 origin, Vector3 target, bool isColliding);
+
     public override void _Ready()
     {
         base._Ready();
-        distanceLabel = GetNode<Label3D>("Label3D");
+        AddChild(distanceLabel = new Label3D()
+        {
+            Position = new Vector3(0, 0.055f, 0.3f),
+            PixelSize = 0.001f,
+            Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
+            NoDepthTest = true,
+            TextureFilter = BaseMaterial3D.TextureFilterEnum.LinearWithMipmapsAnisotropic,
+            Text = "0.00",
+            FontSize = 64
+        });
     }
 
     public override void _Process(double delta)
@@ -31,16 +43,17 @@ public partial class SimulatedLidar : RayCast3D
 
         timeSinceLastPulse = 0;
 
-        if (!IsColliding())
-        {
-            updateLabel(-TargetPosition.Z);
-            return;
-        }
         var point = GetCollisionPoint();
 
         float distance = GlobalPosition.DistanceTo(point);
+        bool isColliding = IsColliding();
 
-        updateLabel((float)Math.Max(0, distance + Random.Shared.NextSingle() * NoiseVariance));
+        if (!isColliding)
+            updateLabel(-TargetPosition.Z);
+        else
+            updateLabel((float)Math.Max(0, distance + Random.Shared.NextSingle() * NoiseVariance));
+
+        EmitSignalRayCasted(GlobalPosition, point, isColliding);
     }
 
     private void updateLabel(float distance)
