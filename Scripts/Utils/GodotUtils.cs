@@ -13,7 +13,10 @@ public static class GodotUtils
                 yield return t;
 
             if (recursive)
-                child.GetDescendants<T>(recursive);
+            {
+                foreach (var childOfChild in child.GetDescendants<T>(recursive))
+                    yield return childOfChild;
+            }
         }
     }
 
