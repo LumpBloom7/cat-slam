@@ -67,6 +67,7 @@ size = Vector3(0.05, 0.05, 0.05)
 [node name="Node3D" type="Node3D"]
 
 [node name="HUD" type="CanvasLayer" parent="."]
+visible = false
 
 [node name="TerrainMinimap" type="TileMapLayer" parent="HUD"]
 position = Vector2(10, 10)
@@ -140,6 +141,7 @@ mesh = SubResource("PlaneMesh_q2s1f")
 skeleton = NodePath("")
 
 [node name="GridMap" type="GridMap" parent="."]
+visible = false
 mesh_library = ExtResource("11_waypw")
 cell_size = Vector3(1, 1, 1)
 script = ExtResource("11_i451r")

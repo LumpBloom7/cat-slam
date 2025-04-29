@@ -14,6 +14,8 @@ public partial class SimulatedLidar : RayCast3D
 
     private Label3D distanceLabel = null!;
 
+    private Node3D ghostNode = null!;
+
     [Signal]
     public delegate void RayCastedEventHandler(Vector3 origin, Vector3 target, bool isColliding);
 
@@ -30,6 +32,8 @@ public partial class SimulatedLidar : RayCast3D
             Text = "0.00",
             FontSize = 64
         });
+
+        ghostNode = GetNode("/root").GetChild(0).GetNode<Node3D>("GhostRobot");
     }
 
     public override void _Process(double delta)
@@ -49,7 +53,7 @@ public partial class SimulatedLidar : RayCast3D
         if (!isColliding)
         {
             updateLabel(-TargetPosition.Z);
-            EmitSignalRayCasted(GlobalPosition, GlobalPosition + TargetPosition.Rotated(new(0, 1, 0), GlobalRotation.Y), isColliding);
+            EmitSignalRayCasted(ghostNode.GlobalPosition, GlobalPosition + TargetPosition.Rotated(new(0, 1, 0), GlobalRotation.Y), isColliding);
         }
         else
         {
@@ -57,7 +61,7 @@ public partial class SimulatedLidar : RayCast3D
 
             float distance = GlobalPosition.DistanceTo(point);
             updateLabel((float)Math.Max(0, distance + Random.Shared.NextSingle() * NoiseVariance));
-            EmitSignalRayCasted(GlobalPosition, point, isColliding);
+            EmitSignalRayCasted(ghostNode.GlobalPosition, point, isColliding);
         }
     }
 
