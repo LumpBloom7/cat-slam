@@ -45,7 +45,7 @@ public partial class OccupancyMap : MultiMeshInstance3D
         int Height = (int)Math.Ceiling(MapSize.Y / CellSize.Y);
 
         Multimesh.InstanceCount = Width * Height;
-        Multimesh.VisibleInstanceCount = Width * Height; ;
+        Multimesh.VisibleInstanceCount = Width * Height;
 
         Position = -new Vector3(Width * CellSize.X, -0.5f, Height * CellSize.Y) / 2;
         cellContents = new Cell[Height, Width];
@@ -90,7 +90,6 @@ public partial class OccupancyMap : MultiMeshInstance3D
         const float PRECISION = 0.01f;
 
         Vector2 step = new Vector2(target.X - origin.X, target.Z - origin.Z) * PRECISION;
-        Vector2 halfCellSize = CellSize / 2;
         Vector2 halfMapSize = MapSize / 2;
 
         Vector2 current = new Vector2(origin.X, origin.Z) + halfMapSize;
@@ -122,6 +121,12 @@ public partial class OccupancyMap : MultiMeshInstance3D
         {
             bool isFilled = i == cells.Length - 1 && isColliding;
             var cell = cells[i];
+
+            if (cell.Y < 0 || cell.Y > cellContents.GetLength(0))
+                break;
+
+            if (cell.X < 0 || cell.X > cellContents.GetLength(1))
+                break;
 
             var cellContent = cellContents[cell.Y, cell.X];
 
