@@ -50,7 +50,7 @@ public partial class SimulatedLidar : RayCast3D
         if (!IsColliding())
         {
             updateLabel(-TargetPosition.Z);
-            EmitSignalRayCasted(ghostNode.GlobalPosition, ghostNode.GlobalPosition + TargetPosition.Rotated(new(0, 1, 0), ghostNode.GlobalRotation.Y), false);
+            EmitSignalRayCasted(ghostNode.GlobalPosition, ghostNode.GlobalPosition + TargetPosition.Rotated(new(0, 1, 0), GlobalRotation.Y), false);
         }
         else
         {
