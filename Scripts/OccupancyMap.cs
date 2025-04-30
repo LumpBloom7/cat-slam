@@ -122,13 +122,13 @@ public partial class OccupancyMap : MultiMeshInstance3D
             bool isFilled = i == cells.Length - 1 && isColliding;
             var cell = cells[i];
 
-            if (cell.Y < 0 || cell.Y > cellContents.GetLength(0))
-                break;
+            if (cell.Y < 0 || cell.Y >= cellContents.GetLength(0))
+                continue;
 
-            if (cell.X < 0 || cell.X > cellContents.GetLength(1))
-                break;
+            if (cell.X < 0 || cell.X >= cellContents.GetLength(1))
+                continue;
 
-            var cellContent = cellContents[cell.Y, cell.X];
+            ref var cellContent = ref cellContents[cell.Y, cell.X];
 
             cellContent.OccupiedLikelihood = (float)Math.Clamp(cellContent.OccupiedLikelihood + (isFilled ? 1 : 0) - 0.5, 0, 1);
 
