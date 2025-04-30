@@ -47,13 +47,10 @@ public partial class SimulatedLidar : RayCast3D
 
         timeSinceLastPulse = 0;
 
-
-        bool isColliding = IsColliding();
-
-        if (!isColliding)
+        if (!IsColliding())
         {
             updateLabel(-TargetPosition.Z);
-            EmitSignalRayCasted(ghostNode.GlobalPosition, GlobalPosition + TargetPosition.Rotated(new(0, 1, 0), GlobalRotation.Y), isColliding);
+            EmitSignalRayCasted(ghostNode.GlobalPosition, ghostNode.GlobalPosition + TargetPosition.Rotated(new(0, 1, 0), ghostNode.GlobalRotation.Y), false);
         }
         else
         {
@@ -61,7 +58,7 @@ public partial class SimulatedLidar : RayCast3D
 
             float distance = GlobalPosition.DistanceTo(point);
             updateLabel((float)Math.Max(0, distance + Random.Shared.NextSingle() * NoiseVariance));
-            EmitSignalRayCasted(ghostNode.GlobalPosition, point, isColliding);
+            EmitSignalRayCasted(ghostNode.GlobalPosition, point - GlobalPosition + ghostNode.GlobalPosition, true);
         }
     }
 
