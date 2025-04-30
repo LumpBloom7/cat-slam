@@ -47,7 +47,7 @@ public partial class OccupancyMap : MultiMeshInstance3D
         Multimesh.InstanceCount = Width * Height;
         Multimesh.VisibleInstanceCount = Width * Height;
 
-        Position = -new Vector3(Width * CellSize.X, -0.5f, Height * CellSize.Y) / 2;
+        Position = -new Vector3(Width * CellSize.X, 0, Height * CellSize.Y) / 2;
         cellContents = new Cell[Height, Width];
 
         for (int y = 0; y < cellContents.GetLength(0); ++y)
@@ -55,7 +55,7 @@ public partial class OccupancyMap : MultiMeshInstance3D
             for (int x = 0; x < cellContents.GetLength(1); ++x)
             {
                 int index = y * Height + x;
-                var meshTransform = new Transform3D(Basis.Identity, Vector3.Zero);
+                var meshTransform = Transform3D.Identity;
 
                 var cell = cellContents[y, x] = new Cell
                 {
@@ -65,7 +65,7 @@ public partial class OccupancyMap : MultiMeshInstance3D
                     OccupiedLikelihood = 0.5f
                 };
 
-                meshTransform = meshTransform.Translated(new Vector3(x, 0, y)).Scaled(new Vector3(CellSize.X, 0.5f, CellSize.Y));
+                meshTransform = meshTransform.Scaled(new Vector3(CellSize.X, 0.5f, CellSize.Y)).TranslatedLocal(new Vector3(x, 0.25f, y));
 
                 Multimesh.SetInstanceTransform(cell.Index, meshTransform);
                 Multimesh.SetInstanceColor(cell.Index, Color.Color8((byte)Random.Shared.Next(0, 255), (byte)Random.Shared.Next(0, 255), (byte)Random.Shared.Next(0, 255), 255));
@@ -132,8 +132,8 @@ public partial class OccupancyMap : MultiMeshInstance3D
 
             cellContent.OccupiedLikelihood = (float)Math.Clamp(cellContent.OccupiedLikelihood + (isFilled ? 1 : 0) - 0.5, 0, 1);
 
-            var newTransform = new Transform3D(new Basis(), Vector3.Zero); ;
-            newTransform = newTransform.Translated(new Vector3(cell.X, 0, cell.Y)).Scaled(new Vector3(CellSize.X, cellContent.OccupiedLikelihood, CellSize.Y));
+            var newTransform = Transform3D.Identity;
+            newTransform = newTransform.Scaled(new Vector3(CellSize.X, cellContent.OccupiedLikelihood, CellSize.Y)).TranslatedLocal(new Vector3(cell.X, cellContent.OccupiedLikelihood * 0.5f, cell.Y)).Translated(new Vector3(0, -0.1f, 0));
 
             Multimesh.SetInstanceTransform(cellContent.Index, newTransform);
         }
