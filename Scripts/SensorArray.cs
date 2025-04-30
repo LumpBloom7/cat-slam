@@ -7,7 +7,7 @@ public partial class SensorArray : Node3D
     public int NumberOfSensors { get; set; } = 12;
 
     [Export]
-    public float SensorRange { get; set; } = 10;
+    public float SensorRange { get; set; } = 5;
 
     public override void _Ready()
     {
