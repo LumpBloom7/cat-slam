@@ -148,8 +148,6 @@ public partial class RobotCharacter : CharacterBody3D
         if (!float.IsFinite(p4y))
         {
             Console.WriteLine($"Triangulation Y is NaN, ignoring attempt");
-            Console.WriteLine(np2);
-            Console.WriteLine(np3);
             return null;
         }
 
@@ -164,8 +162,6 @@ public partial class RobotCharacter : CharacterBody3D
         Vector2 p4 = new(p4x * cCos - p4y * cSin, p4x * cSin + p4y * cCos);
 
         var res = new Vector2(p4.X + offset.X, -p4.Y + offset.Y);
-
-        Console.WriteLine(res);
 
         return new Vector2(p4.X + offset.X, -p4.Y + offset.Y);
     }
@@ -192,8 +188,6 @@ public partial class RobotCharacter : CharacterBody3D
     {
         var pos = beacons.Select(b => b.Position).ToArray();
         float det = pos[0].X * (pos[1].Y - pos[2].Y) + pos[1].X * (pos[2].Y - pos[0].Y) + pos[2].X * (pos[0].Y - pos[1].Y);
-
-        Console.WriteLine(det);
         return det == 0;
     }
 
