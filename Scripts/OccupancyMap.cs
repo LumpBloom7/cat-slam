@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
-public partial class OccupancyMap : Node3D
+public partial class OccupancyMap : MultiMeshInstance3D
 {
     [Export]
     public Vector2 MapSize;
@@ -12,7 +12,7 @@ public partial class OccupancyMap : Node3D
     public Vector2 CellSize;
 
 
-    private CellContent[,] cellContents = null!;
+    private Cell[,] cellContents = null!;
 
     private StandardMaterial3D material = null!;
 
@@ -27,28 +27,48 @@ public partial class OccupancyMap : Node3D
     {
         base._Ready();
 
-        material = new StandardMaterial3D()
+        Multimesh = new MultiMesh
         {
-            Transparency = BaseMaterial3D.TransparencyEnum.Alpha,
-            AlbedoColor = Color.Color8(255, 0, 255, 128)
+            TransformFormat = MultiMesh.TransformFormatEnum.Transform3D,
+            UseColors = true,
+            Mesh = new BoxMesh()
+            {
+                Material = new StandardMaterial3D
+                {
+                    AlbedoColor = Color.Color8(255, 255, 255),
+                    VertexColorUseAsAlbedo = true,
+                }
+            },
         };
 
         int Width = (int)Math.Ceiling(MapSize.X / CellSize.X);
         int Height = (int)Math.Ceiling(MapSize.Y / CellSize.Y);
 
-        Position = -new Vector3(Width * CellSize.X, 0, Height * CellSize.Y) / 2;
-        cellContents = new CellContent[Height, Width];
+        Multimesh.InstanceCount = Width * Height;
+        Multimesh.VisibleInstanceCount = Width * Height; ;
+
+        Position = -new Vector3(Width * CellSize.X, -0.5f, Height * CellSize.Y) / 2;
+        cellContents = new Cell[Height, Width];
 
         for (int y = 0; y < cellContents.GetLength(0); ++y)
         {
             for (int x = 0; x < cellContents.GetLength(1); ++x)
             {
-                var pos2d = CellSize * new Vector2(x, y);
-                AddChild(cellContents[y, x] = new CellContent(material)
+                int index = y * Height + x;
+                var meshTransform = new Transform3D(Basis.Identity, Vector3.Zero);
+
+                var cell = cellContents[y, x] = new Cell
                 {
-                    Position = new Vector3(pos2d.X, 0, pos2d.Y),
-                    Scale = new Vector3(CellSize.X, 1, CellSize.Y),
-                });
+                    X = x,
+                    Y = y,
+                    Index = index,
+                    OccupiedLikelihood = 0.5f
+                };
+
+                meshTransform = meshTransform.Translated(new Vector3(x, 0, y)).Scaled(new Vector3(CellSize.X, 0.5f, CellSize.Y));
+
+                Multimesh.SetInstanceTransform(cell.Index, meshTransform);
+                Multimesh.SetInstanceColor(cell.Index, Color.Color8((byte)Random.Shared.Next(0, 255), (byte)Random.Shared.Next(0, 255), (byte)Random.Shared.Next(0, 255), 255));
             }
         }
     }
@@ -106,41 +126,22 @@ public partial class OccupancyMap : Node3D
             var cellContent = cellContents[cell.Y, cell.X];
 
             cellContent.OccupiedLikelihood = (float)Math.Clamp(cellContent.OccupiedLikelihood + (isFilled ? 1 : 0) - 0.5, 0, 1);
+
+            var newTransform = new Transform3D(new Basis(), Vector3.Zero); ;
+            newTransform = newTransform.Translated(new Vector3(cell.X, 0, cell.Y)).Scaled(new Vector3(CellSize.X, cellContent.OccupiedLikelihood, CellSize.Y));
+
+            Multimesh.SetInstanceTransform(cellContent.Index, newTransform);
         }
     }
 
-    public readonly record struct Cell
+    public record struct Cell
     {
         public int X { get; init; }
         public int Y { get; init; }
-    }
 
-    public partial class CellContent : MeshInstance3D
-    {
-        private StandardMaterial3D material;
-        public CellContent(StandardMaterial3D material)
-        {
-            Mesh = new BoxMesh
-            {
-                Material = this.material = (StandardMaterial3D)material.Duplicate()
-            };
-        }
-        private float occupiedL = 0.5f;
+        public int Index { get; init; }
 
-        public float OccupiedLikelihood
-        {
-            get => occupiedL;
-            set
-            {
-                if (value == occupiedL)
-                    return;
-
-                occupiedL = value;
-                material.AlbedoColor = material.AlbedoColor with { A = occupiedL };
-                material.Transparency = occupiedL >= 1 ? BaseMaterial3D.TransparencyEnum.Disabled : BaseMaterial3D.TransparencyEnum.Alpha;
-            }
-        }
-
+        public float OccupiedLikelihood { get; set; }
     }
 }
 
