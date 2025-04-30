@@ -37,6 +37,7 @@ public partial class OccupancyMap : MultiMeshInstance3D
                 {
                     AlbedoColor = Color.Color8(255, 255, 255),
                     VertexColorUseAsAlbedo = true,
+                    DiffuseMode = BaseMaterial3D.DiffuseModeEnum.Toon
                 }
             },
         };
