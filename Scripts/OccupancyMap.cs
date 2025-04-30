@@ -131,7 +131,10 @@ public partial class OccupancyMap : MultiMeshInstance3D
 
             ref var cellContent = ref cellContents[cell.Y, cell.X];
 
-            cellContent.OccupiedLikelihood = (float)Math.Clamp(cellContent.OccupiedLikelihood + (isFilled ? 1 : 0) - 0.5, 0, 1);
+            float dist = new Vector2(cell.X * CellSize.X, cell.Y * CellSize.Y).DistanceTo(new Vector2(origin.X, origin.Z) + MapSize / 2);
+            float prob = ((isFilled ? 1 : 0) - 0.5f) * (1 - Math.Clamp(dist, 0, 5) / 5);
+
+            cellContent.OccupiedLikelihood = (float)Math.Clamp(cellContent.OccupiedLikelihood + prob, 0, 1);
 
             var newTransform = Transform3D.Identity;
             newTransform = newTransform.Scaled(new Vector3(CellSize.X, cellContent.OccupiedLikelihood, CellSize.Y)).TranslatedLocal(new Vector3(cell.X, cellContent.OccupiedLikelihood * 0.5f, cell.Y)).Translated(new Vector3(0, -0.1f, 0));
