@@ -130,6 +130,7 @@ script = ExtResource("7_oql0q")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 100, 0)
+shadow_enabled = true
 
 [node name="Bocchi dino" parent="." instance=ExtResource("8_2dy0i")]
 transform = Transform3D(9.9413, 0, 17.3543, 0, 20, 0, -17.3543, 0, 9.9413, 0, -5, -30)
