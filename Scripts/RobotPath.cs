@@ -1,12 +1,16 @@
 using System;
 using Godot;
 
-public partial class RobotPath : Node3D
+public partial class RobotPath : MultiMeshInstance3D
 {
     private Vector3? lastPosition = null!;
 
     [Export]
-    public Color LineColour { get; set; } = Color.Color8(255, 0, 0, 100);
+
+    public int Length { get; set; } = 20000;
+
+    [Export]
+    public Color LineColour { get; set; } = Color.Color8(255, 0, 0, 255);
 
     [Export]
     public bool dotted { get; set; } = false;
@@ -14,16 +18,24 @@ public partial class RobotPath : Node3D
     public override void _Ready()
     {
         base._Ready();
-        cylinderMesh = new()
+        // These lines are so small, casting a shadow is unlikely to change the environment
+        // Let's disable it to reduce draw calls
+        CastShadow = ShadowCastingSetting.Off;
+        Multimesh = new MultiMesh
         {
-            TopRadius = 0.01f,
-            BottomRadius = 0.01f,
-            Material = new OrmMaterial3D()
+            TransformFormat = MultiMesh.TransformFormatEnum.Transform3D,
+            Mesh = new BoxMesh()
             {
-                ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
-                AlbedoColor = LineColour
+                Material = new StandardMaterial3D()
+                {
+                    ShadingMode = BaseMaterial3D.ShadingModeEnum.Unshaded,
+                    AlbedoColor = LineColour
+                },
+                Size = new Vector3(0.02f, 1f, 0.02f)
             },
-            Height = 1
+            InstanceCount = Length,
+            // At first none of the instances are visible, let's not force the engine to draw them
+            VisibleInstanceCount = 0
         };
     }
 
@@ -32,13 +44,21 @@ public partial class RobotPath : Node3D
     private int count = 0;
     private bool isDrawing = true;
 
+    private int currentInstance = 0;
+
     public void OnPositionChanged(Vector3 position)
     {
+        if (Length == 0)
+            return;
+
         if (lastPosition is null)
         {
             lastPosition = position;
             return;
         }
+
+        if (position == lastPosition)
+            return;
 
         if (lastPosition.Value.IsEqualApprox(position))
             return;
@@ -66,20 +86,19 @@ public partial class RobotPath : Node3D
         if (inBetweenPos.IsEqualApprox(position))
             return;
 
-        var mesh = new LineMesh
-        {
-            Mesh = cylinderMesh,
-            Scale = new(1, length, 1),
-        };
+        Transform3D transform = Transform3D.Identity
+                            .TranslatedLocal(inBetweenPos)
+                            .LookingAt(position)
+                            .RotatedLocal(new Vector3(1, 0, 0), Mathf.DegToRad(90))
+                            .ScaledLocal(new Vector3(1, length, 1));
 
-        AddChild(mesh);
-        mesh.LookAtFromPosition(inBetweenPos, position);
+        Multimesh.SetInstanceTransform(currentInstance, transform);
 
-        mesh.Rotation = mesh.Rotation with
-        {
-            X = Mathf.DegToRad(90)
-        };
+        currentInstance++;
 
+        Multimesh.VisibleInstanceCount = Math.Max(Multimesh.VisibleInstanceCount, currentInstance);
+
+        currentInstance %= Length;
         lastPosition = position;
     }
 

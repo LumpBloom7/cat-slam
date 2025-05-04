@@ -165,12 +165,12 @@ mesh = SubResource("CylinderMesh_oql0q")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, -0.15)
 mesh = SubResource("BoxMesh_6eaws")
 
-[node name="ActualPath" type="Node3D" parent="."]
+[node name="ActualPath" type="MultiMeshInstance3D" parent="."]
 script = ExtResource("14_oql0q")
 
-[node name="GhostPath" type="Node3D" parent="."]
+[node name="GhostPath" type="MultiMeshInstance3D" parent="."]
 script = ExtResource("14_oql0q")
-LineColour = Color(0, 1, 0, 0.392157)
+LineColour = Color(0, 1, 0, 1)
 dotted = true
 
 [connection signal="GhostPositionChanged" from="Robot" to="GhostPath" method="OnPositionChanged"]
