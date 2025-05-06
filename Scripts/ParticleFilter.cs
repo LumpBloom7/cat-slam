@@ -8,7 +8,7 @@ using Godot;
 using Vector2 = System.Numerics.Vector2;
 using Vector3 = System.Numerics.Vector3;
 
-public struct Particle
+public record struct Particle
 {
     // Z is the theta here
     public Vector3 Coordinate { get; init; }
@@ -57,16 +57,19 @@ public partial class ParticleFilter : MultiMeshInstance3D
         wFast = 0.0;
 
         initializeParticles();
+        CastShadow = ShadowCastingSetting.Off;
 
         Multimesh = new MultiMesh
         {
             TransformFormat = MultiMesh.TransformFormatEnum.Transform3D,
-            Mesh = new SphereMesh
+            UseColors = true,
+            Mesh = new BoxMesh
             {
-                Radius = 0.2f,
+                Size = new Godot.Vector3(0.1f, 0.1f, 0.1f),
                 Material = new StandardMaterial3D
                 {
-                    AlbedoColor = Color.Color8(0, 255, 255, 255),
+                    AlbedoColor = Color.Color8(255, 255, 255, 255),
+                    VertexColorUseAsAlbedo = true,
                 }
             },
             InstanceCount = ParticleCount,
@@ -221,12 +224,12 @@ public partial class ParticleFilter : MultiMeshInstance3D
             GD.Print("----------Particles----------------");
             GD.Print(particles.MaxBy(x => x.Weight).Coordinate);
             GD.Print(particles.MaxBy(x => x.Weight).Weight);
-            GD.Print(robotCharacter.simulateMotion(particles.MaxBy(x => x.Weight).Coordinate.Z));
+            GD.Print(robotCharacter?.simulateMotion(particles.MaxBy(x => x.Weight).Coordinate.Z));
             GD.Print(particles.Count);
 
             GD.Print("----------Current Position----------------");
             GD.Print(robotCharacter?.GlobalPosition);
-            GD.Print(robotCharacter.simulateMotion(robotCharacter.Rotation.Y));
+            GD.Print(robotCharacter?.simulateMotion(robotCharacter.Rotation.Y));
         }
     }
 
@@ -261,13 +264,22 @@ public partial class ParticleFilter : MultiMeshInstance3D
     private void updateVisuals()
     {
         Multimesh.VisibleInstanceCount = particles.Count;
+
+        if (particles.Count == 0)
+            return;
+
+        var bestCandidateParticle = particles.MaxBy(p => p.Weight);
         for (int i = 0; i < particles.Count; ++i)
         {
             var meshTransform = Transform3D.Identity;
+            bool isBest = (particles[i] == bestCandidateParticle);
 
-            meshTransform = meshTransform.TranslatedLocal(new Godot.Vector3(particles[i].Coordinate.X, 0.25f, particles[i].Coordinate.Y));
+            Godot.Vector3 Scale = isBest ? Godot.Vector3.One * 2 : Godot.Vector3.One;
+
+            meshTransform = meshTransform.Scaled(Scale).TranslatedLocal(new Godot.Vector3(particles[i].Coordinate.X, 0, particles[i].Coordinate.Y));
 
             Multimesh.SetInstanceTransform(i, meshTransform);
+            Multimesh.SetInstanceColor(i, isBest ? Color.Color8(0, 255, 0, 255) : Color.Color8(0, 255, 255, 255));
         }
     }
 
