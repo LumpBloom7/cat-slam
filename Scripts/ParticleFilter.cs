@@ -27,9 +27,19 @@ public partial class ParticleFilter : MultiMeshInstance3D
     public int ParticleCount { get; set; } = 1000;
 
     [Export]
-    public float Sigma { get; set; } = 0.01f;
+    public float Sigma { get; set; } = 2f;
 
     private List<Particle> particles { get; } = [];
+
+    // Added parameters for Augmented MCL
+    [Export]
+    public float AlphaSlow { get; set; } = 0.001f; // Decay rate for long-term average
+
+    [Export]
+    public float AlphaFast { get; set; } = 0.1f; // Decay rate for short-term average
+
+    private double wSlow = 0.0; // Long-term average weight
+    private double wFast = 0.0; // Short-term average weight
 
     public override void _Ready()
     {
@@ -42,6 +52,9 @@ public partial class ParticleFilter : MultiMeshInstance3D
         Height = tileMap?.Height ?? 0;
 
         offset = new Vector2(Width / 2f, Height / 2f);
+
+        wSlow = 0.0;
+        wFast = 0.0;
 
         initializeParticles();
     }
@@ -74,6 +87,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
         var beaconD = robotCharacter.BeaconDetector;
         var realObservations = beaconD.GetTrackedBeacons();
         double totalWeight = 0.0;
+        double avgWeight = 0.0;
 
         // Applying motion and updating the weights
         foreach (var particle in particles)
@@ -104,10 +118,13 @@ public partial class ParticleFilter : MultiMeshInstance3D
                     Weight = normalized
                 };
                 NewParticlesCandidates[i] = newParticle;
+                avgWeight += normalized;
             }
+            avgWeight /= NewParticlesCandidates.Count;
         }
         // Resampling
-
+        wSlow = wSlow + AlphaSlow * (avgWeight - wSlow);
+        wFast = wFast + AlphaFast * (avgWeight - wFast);
         // Build cumulative sum of weights for efficient sampling
 
         double[] cumulativeWeights = new double[NewParticlesCandidates.Count];
@@ -117,22 +134,42 @@ public partial class ParticleFilter : MultiMeshInstance3D
         {
             cumulativeWeights[i] = cumulativeWeights[i - 1] + NewParticlesCandidates[i].Weight;
         }
-        int index = 0;
         Random random = new Random();
-        double u = random.NextDouble();
 
         particles.Clear();
         for (int i = 0; i < NewParticlesCandidates.Count; i++)
         {
-            while (u > cumulativeWeights[index] && index < NewParticlesCandidates.Count - 1)
+            // Calculate probability of adding random samples
+            double randomSampleProb = Math.Max(0.0, 1.0 - wFast / wSlow);
+
+            if (random.NextDouble() < randomSampleProb)
             {
-                index++;
+                // Add random sample
+                float y = ((float)random.NextDouble() * Height) - offset.Y;
+                float x = ((float)random.NextDouble() * Width) - offset.X;
+                float theta = (float)random.NextDouble();
+                Vector3 newVec = new Vector3(x, y, theta);
+                // example how to do motion vector
+                Particle newParticle = new Particle()
+                {
+                    Coordinate = newVec,
+                    Weight = 1f / ParticleCount
+                };
+                particles.Add(newParticle);
             }
+            else
+            {
+                // Regular resampling
+                double u = random.NextDouble();
+                int index = 0;
 
-            // Add a copy of the selected particle
+                while (index < NewParticlesCandidates.Count - 1 && u > cumulativeWeights[index])
+                {
+                    index++;
+                }
 
-            particles.Add(NewParticlesCandidates[index]);
-            index = 0;
+                particles.Add(NewParticlesCandidates[index]);
+            }
         }
 
         print();
