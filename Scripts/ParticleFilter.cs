@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -30,6 +31,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
     public float Sigma { get; set; } = 2f;
 
     private List<Particle> particles { get; } = [];
+    private List<Particle> candidates { get; } = [];
 
     // Added parameters for Augmented MCL
     [Export]
@@ -79,7 +81,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
 
     public void initializeParticles()
     {
-        Random r = new Random();
+        Random r = Random.Shared;
         for (int i = 0; i < ParticleCount; i++)
         {
             float y = ((float)r.NextDouble() * Height) - offset.Y;
@@ -101,7 +103,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
         if (robotCharacter is null)
             return;
 
-        List<Particle> NewParticlesCandidates = new List<Particle>();
+        candidates.Clear();
         var beaconD = robotCharacter.BeaconDetector;
         var realObservations = beaconD.GetTrackedBeacons();
         double totalWeight = 0.0;
@@ -122,42 +124,42 @@ public partial class ParticleFilter : MultiMeshInstance3D
                 Coordinate = vecAfterMotion,
                 Weight = newWeight
             };
-            NewParticlesCandidates.Add(newParticle);
+            candidates.Add(newParticle);
         }
         // Normalizing
         // GD.Print("----------Weights----------------");
         // GD.Print(totalWeight);
         if (totalWeight > 0)
         {
-            for (int i = 0; i < NewParticlesCandidates.Count; i++)
+            for (int i = 0; i < candidates.Count; i++)
             {
-                double normalized = NewParticlesCandidates[i].Weight / totalWeight;
+                double normalized = candidates[i].Weight / totalWeight;
                 Particle newParticle = new Particle()
                 {
-                    Coordinate = NewParticlesCandidates[i].Coordinate,
+                    Coordinate = candidates[i].Coordinate,
                     Weight = normalized
                 };
-                NewParticlesCandidates[i] = newParticle;
+                candidates[i] = newParticle;
                 avgWeight += normalized;
             }
-            avgWeight /= NewParticlesCandidates.Count;
+            avgWeight /= candidates.Count;
         }
         // Resampling
         wSlow = wSlow + AlphaSlow * (avgWeight - wSlow);
         wFast = wFast + AlphaFast * (avgWeight - wFast);
         // Build cumulative sum of weights for efficient sampling
 
-        double[] cumulativeWeights = new double[NewParticlesCandidates.Count];
-        cumulativeWeights[0] = NewParticlesCandidates[0].Weight;
+        double[] cumulativeWeights = ArrayPool<double>.Shared.Rent(candidates.Count);
+        cumulativeWeights[0] = candidates[0].Weight;
 
-        for (int i = 1; i < NewParticlesCandidates.Count; i++)
+        for (int i = 1; i < candidates.Count; i++)
         {
-            cumulativeWeights[i] = cumulativeWeights[i - 1] + NewParticlesCandidates[i].Weight;
+            cumulativeWeights[i] = cumulativeWeights[i - 1] + candidates[i].Weight;
         }
-        Random random = new Random();
+        Random random = Random.Shared;
 
         particles.Clear();
-        for (int i = 0; i < NewParticlesCandidates.Count; i++)
+        for (int i = 0; i < candidates.Count; i++)
         {
             // Calculate probability of adding random samples
             double randomSampleProb = Math.Max(0.0, 1.0 - wFast / wSlow);
@@ -183,13 +185,13 @@ public partial class ParticleFilter : MultiMeshInstance3D
                 double u = random.NextDouble();
                 int index = 0;
 
-                while (index < NewParticlesCandidates.Count - 1 && u > cumulativeWeights[index])
+                while (index < candidates.Count - 1 && u > cumulativeWeights[index])
                 {
                     index++;
                 }
 
                 // Get the selected particle
-                Particle selectedParticle = NewParticlesCandidates[index];
+                Particle selectedParticle = candidates[index];
 
 
                 float noiseX = (float)(NextGaussian() * 0.05);
@@ -210,6 +212,8 @@ public partial class ParticleFilter : MultiMeshInstance3D
                 particles.Add(newParticle);
             }
         }
+
+        ArrayPool<double>.Shared.Return(cumulativeWeights);
 
         print();
         updateVisuals();
@@ -235,7 +239,6 @@ public partial class ParticleFilter : MultiMeshInstance3D
 
     private double UpdateWeight(IEnumerable<(Vector2 Position, float Distance)> real, Vector3 particle)
     {
-
         double logWeight = 0.0;
         Vector2 particlePos = new Vector2(particle.X, particle.Y);
         foreach (var observation in real)
