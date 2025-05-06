@@ -70,7 +70,7 @@ public partial class RobotCharacter : CharacterBody3D
             tempTileMap[i] = new Tile[27];
         }
 
-        particleFilter = new ParticleFilter(tempTileMap, this);
+        particleFilter = new ParticleFilter(tempTileMap, this, standard_diviation: 1.0);
         particleFilter.initializeParticles();
     }
 
@@ -81,6 +81,8 @@ public partial class RobotCharacter : CharacterBody3D
 
         return new(movementVector.X, movementVector.Z);
     }
+
+    private int count = 0;
 
     public override void _PhysicsProcess(double delta)
     {
@@ -132,17 +134,20 @@ public partial class RobotCharacter : CharacterBody3D
 
         // Update Kalman filter
         // Mathematical rotation is counterclockwise
+
         updateKalmanFilter(rotAmount, velocity, delta, Rotation.Y);
         particleFilter.Update();
-        GD.Print("----------Particles----------------");
-        GD.Print(particleFilter?.Particles.ElementAt(0).Coordinate);
-        GD.Print(particleFilter?.Particles.ElementAt(0).Weight);
-        GD.Print(particleFilter?.Particles.ElementAt(100).Coordinate);
-        GD.Print(particleFilter?.Particles.ElementAt(100).Weight);
-        GD.Print(particleFilter?.Particles.ElementAt(500).Coordinate);
-        GD.Print(particleFilter?.Particles.ElementAt(500).Weight);
-        GD.Print("----------Current Position----------------");
-        GD.Print(Position);
+
+        if (++count == 60)
+        {
+            count = 0;
+            GD.Print("----------Particles----------------");
+            GD.Print(particleFilter?.Particles.MaxBy(x=>x.Weight).Coordinate);
+            GD.Print(particleFilter?.Particles.MaxBy(x=>x.Weight).Weight);
+
+            GD.Print("----------Current Position----------------");
+            GD.Print(Position);
+        }
         foreach (var particle in particleFilter.Particles)
         {
             var particlePosition = new Vector3(particle.Coordinate.X, 0, particle.Coordinate.Y);

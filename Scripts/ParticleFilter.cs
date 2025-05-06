@@ -18,6 +18,8 @@ public class ParticleFilter
 
     public double sigma { get; }
 
+    public Vector2 offset { get; }
+
     public int Num_particles { get; }
 
     public List<Particle> Particles { get; set; }
@@ -27,6 +29,7 @@ public class ParticleFilter
         RobotCharacter = rb;
         Height = map.Length;
         Width = map[0].Length;
+        offset = new Vector2(Width/2f, Height/2f);
         Num_particles = num_particles;
         Particles = new List<Particle>();
         sigma = standard_diviation;
@@ -46,8 +49,8 @@ public class ParticleFilter
         Random r = new Random();
         for (int i = 0; i < Num_particles; i++)
         {
-            float y = (float)r.NextDouble() * Height;
-            float x = (float)r.NextDouble() * Width;
+            float y = ((float)r.NextDouble() * Height) - offset.Y;
+            float x = ((float)r.NextDouble() * Width) - offset.X;
             float theta = (float)r.NextDouble();
             Vector3 newVec = new Vector3(x, y, theta);
             // example how to do motion vector
@@ -73,13 +76,11 @@ public class ParticleFilter
         {
             var currentPos = particle.Coordinate;
             float theta = particle.Coordinate.Z;
-            var motion_vector = RobotCharacter.simulateMotion(theta);
+            var motion_vector = RobotCharacter.simulateMotion(theta); //Multiply by delta
 
             Vector3 vecAfterMotion = new Vector3(currentPos.X + motion_vector.X, currentPos.Y + motion_vector.Y, theta);
 
-
-            var partivleObservations = beaconD.GetBeaconsInfoFrom(vecAfterMotion.X, vecAfterMotion.Y);
-            double newWeight = UpdateWeight(partivleObservations, realObservations);
+            double newWeight = UpdateWeight(realObservations, vecAfterMotion);
             totalWeight += newWeight;
             Particle newParticle = new Particle()
             {
@@ -132,43 +133,24 @@ public class ParticleFilter
         Particles = NewParticles;
     }
 
-    private double UpdateWeight(IEnumerable<(Vector2 Position, float Distance)> observations, IEnumerable<(Vector2 Position, float Distance)> real)
+    private double UpdateWeight(IEnumerable<(Vector2 Position, float Distance)> real, Vector3 particle)
     {
-        if (real.Count() == 0)
-            return 0.0;
-
-        List<(Vector2 Position, float Distance)> inRange = [];
-
-        foreach (var observation in observations)
-        {
-            if (observation.Distance < 5)
-            {
-                inRange.Add(observation);
-            }
-        }
-
-        if (inRange.Count != real.Count())
-        {
-            return 0.0;
-        }
 
         double weight = 1.0;
-
-        foreach (var observation in inRange)
+        Vector2 particlePos = new Vector2(particle.X, particle.Y);
+        foreach (var observation in real)
         {
-
-            // Find the landmark corresponding to this observation
-            var landmark = real.FirstOrDefault(r => r.Position == observation.Position);
-
-            if (observation.Position != landmark.Position)
-                return 0.0;
-
             // Calculate expected observation from this particle's position
-            double observationDistance = observation.Distance;
+            double realDistance = observation.Distance;
+            var realCords = observation.Position;
+
+            float partDist = (realCords - particlePos).Length();
 
             // Calculate the probability of this observation
 
-            double probRange = GaussianProbability(landmark.Distance - observationDistance, sigma);
+            double probRange = GaussianProbability(observation.Distance - partDist, sigma);
+            Console.WriteLine(probRange);
+            
             // Combine probabilities
 
             weight *= probRange;
