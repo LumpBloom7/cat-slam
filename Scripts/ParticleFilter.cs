@@ -81,7 +81,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
         {
             float y = ((float)r.NextDouble() * Height) - offset.Y;
             float x = ((float)r.NextDouble() * Width) - offset.X;
-            float theta = (float)r.NextDouble();
+            float theta = (float)r.NextDouble() * (2 * MathF.PI);
             Vector3 newVec = new Vector3(x, y, theta);
             // example how to do motion vector
             Particle newParticle = new Particle()
@@ -110,7 +110,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
             var currentPos = particle.Coordinate;
             float theta = particle.Coordinate.Z;
             var motion_vector = robotCharacter.simulateMotion(theta) * (float)delta;
-            Vector3 vecAfterMotion = new Vector3(currentPos.X + motion_vector.X, currentPos.Y + motion_vector.Y, theta);
+            Vector3 vecAfterMotion = new Vector3(currentPos.X + motion_vector.X, currentPos.Y + motion_vector.Y, theta + motion_vector.Z);
 
             double newWeight = UpdateWeight(realObservations, vecAfterMotion);
             totalWeight += newWeight;
@@ -122,6 +122,8 @@ public partial class ParticleFilter : MultiMeshInstance3D
             NewParticlesCandidates.Add(newParticle);
         }
         // Normalizing
+        // GD.Print("----------Weights----------------");
+        // GD.Print(totalWeight);
         if (totalWeight > 0)
         {
             for (int i = 0; i < NewParticlesCandidates.Count; i++)
@@ -183,7 +185,26 @@ public partial class ParticleFilter : MultiMeshInstance3D
                     index++;
                 }
 
-                particles.Add(NewParticlesCandidates[index]);
+                // Get the selected particle
+                Particle selectedParticle = NewParticlesCandidates[index];
+
+
+                float noiseX = (float)(NextGaussian() * 0.05);
+                float noiseY = (float)(NextGaussian() * 0.05);
+                float noiseTheta = (float)(NextGaussian() * 0.02);
+
+
+                Particle newParticle = new Particle()
+                {
+                    Coordinate = new Vector3(
+                        selectedParticle.Coordinate.X + noiseX,
+                        selectedParticle.Coordinate.Y + noiseY,
+                        selectedParticle.Coordinate.Z + noiseTheta
+                    ),
+                    Weight = selectedParticle.Weight
+                };
+
+                particles.Add(newParticle);
             }
         }
 
@@ -200,16 +221,19 @@ public partial class ParticleFilter : MultiMeshInstance3D
             GD.Print("----------Particles----------------");
             GD.Print(particles.MaxBy(x => x.Weight).Coordinate);
             GD.Print(particles.MaxBy(x => x.Weight).Weight);
+            GD.Print(robotCharacter.simulateMotion(particles.MaxBy(x => x.Weight).Coordinate.Z));
+            GD.Print(particles.Count);
 
             GD.Print("----------Current Position----------------");
             GD.Print(robotCharacter?.GlobalPosition);
+            GD.Print(robotCharacter.simulateMotion(robotCharacter.Rotation.Y));
         }
     }
 
     private double UpdateWeight(IEnumerable<(Vector2 Position, float Distance)> real, Vector3 particle)
     {
 
-        double weight = 1.0;
+        double logWeight = 0.0;
         Vector2 particlePos = new Vector2(particle.X, particle.Y);
         foreach (var observation in real)
         {
@@ -226,9 +250,12 @@ public partial class ParticleFilter : MultiMeshInstance3D
 
             // Combine probabilities
 
-            weight *= probRange;
+            if (probRange > 0) // Avoid taking log of zero
+                logWeight += Math.Log(probRange);
+            else
+                logWeight += -20.0;
         }
-        return weight;
+        return Math.Exp(logWeight);
     }
 
     private void updateVisuals()
@@ -248,5 +275,14 @@ public partial class ParticleFilter : MultiMeshInstance3D
     {
         return Math.Exp(-0.5 * x * x / (sigma * sigma)) / (Math.Sqrt(2 * Math.PI) * sigma);
     }
+
+    private static double NextGaussian()
+    {
+        Random r = new Random();
+        double u1 = 1.0 - r.NextDouble(); // Uniform(0,1) random doubles
+        double u2 = 1.0 - r.NextDouble();
+        return Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2);
+    }
+
 
 }
