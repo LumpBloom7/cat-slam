@@ -35,8 +35,6 @@ public partial class RobotCharacter : CharacterBody3D
     [Signal]
     public delegate void GhostPositionChangedEventHandler(Vector3 position);
 
-    [Signal]
-    public delegate void ParticlePositionChangedEventHandler(Vector3 coordinate);
 
     private GridMap breadcrumbMap = null!;
 
