@@ -179,6 +179,7 @@ LineColour = Color(0.795696, 0.297552, 0.757566, 1)
 
 [connection signal="GhostPositionChanged" from="Robot" to="GhostPath" method="OnPositionChanged"]
 [connection signal="LeftMotorValueChanged" from="Robot" to="Robot/MotorLabels/Label3D" method="OnSignalReceived"]
+[connection signal="ParticlePositionChanged" from="Robot" to="ParticlePath" method="OnPositionChanged"]
 [connection signal="PositionChanged" from="Robot" to="HUD/TerrainMinimap" method="OnPlayerMove"]
 [connection signal="PositionChanged" from="Robot" to="ActualPath" method="OnPositionChanged"]
 [connection signal="RightMotorValueChanged" from="Robot" to="Robot/MotorLabels/Label3D2" method="OnSignalReceived"]

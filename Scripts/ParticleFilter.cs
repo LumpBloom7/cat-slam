@@ -50,7 +50,7 @@ public class ParticleFilter
             float x = (float)r.NextDouble() * Width;
             float theta = (float)r.NextDouble();
             Vector3 newVec = new Vector3(x, y, theta);
-            // example how to do motion vector 
+            // example how to do motion vector
             Particle newParticle = new Particle()
             {
                 Coordinate = newVec,
@@ -134,12 +134,14 @@ public class ParticleFilter
 
     private double UpdateWeight(IEnumerable<(Vector2 Position, float Distance)> observations, IEnumerable<(Vector2 Position, float Distance)> real)
     {
+        if (real.Count() == 0)
+            return 0.0;
 
         List<(Vector2 Position, float Distance)> inRange = [];
 
         foreach (var observation in observations)
         {
-            if (observation.Distance < 500)
+            if (observation.Distance < 5)
             {
                 inRange.Add(observation);
             }
@@ -154,15 +156,15 @@ public class ParticleFilter
 
         foreach (var observation in inRange)
         {
+
             // Find the landmark corresponding to this observation
             var landmark = real.FirstOrDefault(r => r.Position == observation.Position);
-            if (landmark == (null, null)) continue;
+
+            if (observation.Position != landmark.Position)
+                return 0.0;
 
             // Calculate expected observation from this particle's position
-
             double observationDistance = observation.Distance;
-
-
 
             // Calculate the probability of this observation
 
