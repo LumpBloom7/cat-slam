@@ -2,11 +2,21 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Play",
+            "name": "Play (MacOS)",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
             "program": "/Applications/Godot_mono.app/Contents/MacOS/Godot",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "stopAtEntry": false,
+        },
+        {
+            "name": "Play (env)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${env:GODOT_PATH}",
             "args": [],
             "cwd": "${workspaceFolder}",
             "stopAtEntry": false,
