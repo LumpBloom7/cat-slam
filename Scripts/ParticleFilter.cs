@@ -16,28 +16,32 @@ public class ParticleFilter
     public int Height { get; }
     public int Width { get; }
 
+    public double sigma { get; }
+
     public int Num_particles { get; }
 
     public List<Particle> Particles { get; set; }
 
-    public ParticleFilter(Tile[][] map, RobotCharacter rb, int num_particles = 1000)
+    public ParticleFilter(Tile[][] map, RobotCharacter rb, int num_particles = 1000, double standard_diviation = 0.01)
     {
         RobotCharacter = rb;
         Height = map.Length;
         Width = map[0].Length;
         Num_particles = num_particles;
         Particles = new List<Particle>();
+        sigma = standard_diviation;
     }
-    public ParticleFilter(RobotCharacter rb, int height = 3, int width = 3, int num_particles = 1000)
+    public ParticleFilter(RobotCharacter rb, int height = 3, int width = 3, int num_particles = 1000, double standard_diviation = 0.01)
     {
         RobotCharacter = rb;
         Height = height;
         Width = width;
         Num_particles = num_particles;
         Particles = new List<Particle>();
+        sigma = standard_diviation;
     }
 
-    private void initializeParticles()
+    public void initializeParticles()
     {
         Random r = new Random();
         for (int i = 0; i < Num_particles; i++)
@@ -162,7 +166,7 @@ public class ParticleFilter
 
             // Calculate the probability of this observation
 
-            double probRange = GaussianProbability(landmark.Distance - observationDistance, 0.1);
+            double probRange = GaussianProbability(landmark.Distance - observationDistance, sigma);
             // Combine probabilities
 
             weight *= probRange;

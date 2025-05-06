@@ -173,6 +173,10 @@ script = ExtResource("14_oql0q")
 LineColour = Color(0, 1, 0, 1)
 dotted = true
 
+[node name="ParticlePath" type="MultiMeshInstance3D" parent="."]
+script = ExtResource("14_oql0q")
+LineColour = Color(0.795696, 0.297552, 0.757566, 1)
+
 [connection signal="GhostPositionChanged" from="Robot" to="GhostPath" method="OnPositionChanged"]
 [connection signal="LeftMotorValueChanged" from="Robot" to="Robot/MotorLabels/Label3D" method="OnSignalReceived"]
 [connection signal="PositionChanged" from="Robot" to="HUD/TerrainMinimap" method="OnPlayerMove"]
