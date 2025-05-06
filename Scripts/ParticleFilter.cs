@@ -252,7 +252,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
             // Calculate the probability of this observation
 
             double probRange = GaussianProbability(observation.Distance - partDist, Sigma);
-            Console.WriteLine(probRange);
+            //Console.WriteLine(probRange);
 
             // Combine probabilities
 
@@ -286,14 +286,14 @@ public partial class ParticleFilter : MultiMeshInstance3D
         }
     }
 
-    private double GaussianProbability(double x, double sigma)
+    private static double GaussianProbability(double x, double sigma)
     {
         return Math.Exp(-0.5 * x * x / (sigma * sigma)) / (Math.Sqrt(2 * Math.PI) * sigma);
     }
 
     private static double NextGaussian()
     {
-        Random r = new Random();
+        Random r = Random.Shared;
         double u1 = 1.0 - r.NextDouble(); // Uniform(0,1) random doubles
         double u2 = 1.0 - r.NextDouble();
         return Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2);
