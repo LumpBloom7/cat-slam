@@ -2,6 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using Godot;
+
+
+using Vector2 = System.Numerics.Vector2;
+using Vector3 = System.Numerics.Vector3;
 
 public struct Particle
 {
@@ -10,44 +15,41 @@ public struct Particle
     public double Weight { get; set; }
 }
 
-public class ParticleFilter
+public partial class ParticleFilter : MultiMeshInstance3D
 {
-    public RobotCharacter RobotCharacter = null!;
-    public int Height { get; }
-    public int Width { get; }
+    private RobotCharacter? robotCharacter = null!;
+    public int Height { get; private set; }
+    public int Width { get; private set; }
 
-    public double sigma { get; }
+    private Vector2 offset { get; set; }
 
-    public Vector2 offset { get; }
+    [Export]
+    public int ParticleCount { get; set; } = 1000;
 
-    public int Num_particles { get; }
+    [Export]
+    public float Sigma { get; set; } = 0.01f;
 
-    public List<Particle> Particles { get; set; }
+    private List<Particle> particles { get; } = [];
 
-    public ParticleFilter(Tile[][] map, RobotCharacter rb, int num_particles = 1000, double standard_diviation = 0.01)
+    public override void _Ready()
     {
-        RobotCharacter = rb;
-        Height = map.Length;
-        Width = map[0].Length;
-        offset = new Vector2(Width/2f, Height/2f);
-        Num_particles = num_particles;
-        Particles = new List<Particle>();
-        sigma = standard_diviation;
-    }
-    public ParticleFilter(RobotCharacter rb, int height = 3, int width = 3, int num_particles = 1000, double standard_diviation = 0.01)
-    {
-        RobotCharacter = rb;
-        Height = height;
-        Width = width;
-        Num_particles = num_particles;
-        Particles = new List<Particle>();
-        sigma = standard_diviation;
+        base._Ready();
+
+        robotCharacter = GetNode("/root").GetDescendants<RobotCharacter>(true).FirstOrDefault();
+
+        var tileMap = GetNode("/root").GetDescendants<GridMapGenerator>(true).FirstOrDefault();
+        Width = tileMap?.Width ?? 0;
+        Height = tileMap?.Height ?? 0;
+
+        offset = new Vector2(Width / 2f, Height / 2f);
+
+        initializeParticles();
     }
 
     public void initializeParticles()
     {
         Random r = new Random();
-        for (int i = 0; i < Num_particles; i++)
+        for (int i = 0; i < ParticleCount; i++)
         {
             float y = ((float)r.NextDouble() * Height) - offset.Y;
             float x = ((float)r.NextDouble() * Width) - offset.X;
@@ -57,27 +59,28 @@ public class ParticleFilter
             Particle newParticle = new Particle()
             {
                 Coordinate = newVec,
-                Weight = 1f / Num_particles
+                Weight = 1f / ParticleCount
             };
-            Particles.Add(newParticle);
+            particles.Add(newParticle);
         }
     }
 
-    public void Update()
+    public override void _PhysicsProcess(double delta)
     {
-        List<Particle> NewParticles = new List<Particle>();
+        if (robotCharacter is null)
+            return;
+
         List<Particle> NewParticlesCandidates = new List<Particle>();
-        var beaconD = RobotCharacter.BeaconDetector;
+        var beaconD = robotCharacter.BeaconDetector;
         var realObservations = beaconD.GetTrackedBeacons();
         double totalWeight = 0.0;
 
         // Applying motion and updating the weights
-        foreach (var particle in Particles)
+        foreach (var particle in particles)
         {
             var currentPos = particle.Coordinate;
             float theta = particle.Coordinate.Z;
-            var motion_vector = RobotCharacter.simulateMotion(theta); //Multiply by delta
-
+            var motion_vector = robotCharacter.simulateMotion(theta) * (float)delta;
             Vector3 vecAfterMotion = new Vector3(currentPos.X + motion_vector.X, currentPos.Y + motion_vector.Y, theta);
 
             double newWeight = UpdateWeight(realObservations, vecAfterMotion);
@@ -110,7 +113,6 @@ public class ParticleFilter
         double[] cumulativeWeights = new double[NewParticlesCandidates.Count];
         cumulativeWeights[0] = NewParticlesCandidates[0].Weight;
 
-
         for (int i = 1; i < NewParticlesCandidates.Count; i++)
         {
             cumulativeWeights[i] = cumulativeWeights[i - 1] + NewParticlesCandidates[i].Weight;
@@ -118,6 +120,8 @@ public class ParticleFilter
         int index = 0;
         Random random = new Random();
         double u = random.NextDouble();
+
+        particles.Clear();
         for (int i = 0; i < NewParticlesCandidates.Count; i++)
         {
             while (u > cumulativeWeights[index] && index < NewParticlesCandidates.Count - 1)
@@ -127,10 +131,26 @@ public class ParticleFilter
 
             // Add a copy of the selected particle
 
-            NewParticles.Add(NewParticlesCandidates[index]);
+            particles.Add(NewParticlesCandidates[index]);
             index = 0;
         }
-        Particles = NewParticles;
+
+        print();
+    }
+
+    private int count = 0;
+    private void print()
+    {
+        if (++count == 60)
+        {
+            count = 0;
+            GD.Print("----------Particles----------------");
+            GD.Print(particles.MaxBy(x => x.Weight).Coordinate);
+            GD.Print(particles.MaxBy(x => x.Weight).Weight);
+
+            GD.Print("----------Current Position----------------");
+            GD.Print(robotCharacter?.GlobalPosition);
+        }
     }
 
     private double UpdateWeight(IEnumerable<(Vector2 Position, float Distance)> real, Vector3 particle)
@@ -148,9 +168,9 @@ public class ParticleFilter
 
             // Calculate the probability of this observation
 
-            double probRange = GaussianProbability(observation.Distance - partDist, sigma);
+            double probRange = GaussianProbability(observation.Distance - partDist, Sigma);
             Console.WriteLine(probRange);
-            
+
             // Combine probabilities
 
             weight *= probRange;

@@ -2,6 +2,10 @@ using System;
 using Godot;
 public partial class GridMapGenerator : GridMap
 {
+
+    public int Width { get; private set; }
+    public int Height { get; private set; }
+
     private Node BeaconStorageNode = new Node()
     {
         Name = "Beacons"
@@ -31,14 +35,14 @@ public partial class GridMapGenerator : GridMap
             return;
         }
 
-        int mapHeight = bitmap.Length;
-        int mapWidth = bitmap[0].Length;
+        Height = bitmap.Length;
+        Width = bitmap[0].Length;
 
-        GD.Print(mapHeight, mapWidth);
-        var offset = new Vector3I(mapHeight / 2, 0, mapWidth / 2);
-        for (int x = 0; x < mapHeight; x++)
+        GD.Print(Height, Width);
+        var offset = new Vector3I(Height / 2, 0, Width / 2);
+        for (int x = 0; x < Height; x++)
         {
-            for (int z = 0; z < mapWidth; z++)
+            for (int z = 0; z < Width; z++)
             {
                 Vector3I tilePosition = new Vector3I(x, -1, z);
                 int sourceId = MeshLibrary.FindItemByName("block-grass");
