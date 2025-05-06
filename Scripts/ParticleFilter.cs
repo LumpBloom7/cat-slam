@@ -57,6 +57,21 @@ public partial class ParticleFilter : MultiMeshInstance3D
         wFast = 0.0;
 
         initializeParticles();
+
+        Multimesh = new MultiMesh
+        {
+            TransformFormat = MultiMesh.TransformFormatEnum.Transform3D,
+            Mesh = new SphereMesh
+            {
+                Radius = 0.2f,
+                Material = new StandardMaterial3D
+                {
+                    AlbedoColor = Color.Color8(0, 255, 255, 255),
+                }
+            },
+            InstanceCount = ParticleCount,
+            VisibleInstanceCount = ParticleCount
+        };
     }
 
     public void initializeParticles()
@@ -173,6 +188,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
         }
 
         print();
+        updateVisuals();
     }
 
     private int count = 0;
@@ -214,6 +230,20 @@ public partial class ParticleFilter : MultiMeshInstance3D
         }
         return weight;
     }
+
+    private void updateVisuals()
+    {
+        Multimesh.VisibleInstanceCount = particles.Count;
+        for (int i = 0; i < particles.Count; ++i)
+        {
+            var meshTransform = Transform3D.Identity;
+
+            meshTransform = meshTransform.TranslatedLocal(new Godot.Vector3(particles[i].Coordinate.X, 0.25f, particles[i].Coordinate.Y));
+
+            Multimesh.SetInstanceTransform(i, meshTransform);
+        }
+    }
+
     private double GaussianProbability(double x, double sigma)
     {
         return Math.Exp(-0.5 * x * x / (sigma * sigma)) / (Math.Sqrt(2 * Math.PI) * sigma);
