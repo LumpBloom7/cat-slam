@@ -145,8 +145,8 @@ public partial class ParticleFilter : MultiMeshInstance3D
             avgWeight /= candidates.Count;
         }
         // Resampling
-        wSlow = wSlow + AlphaSlow * (avgWeight - wSlow);
-        wFast = wFast + AlphaFast * (avgWeight - wFast);
+        wSlow += AlphaSlow * (avgWeight - wSlow);
+        wFast += AlphaFast * (avgWeight - wFast);
         // Build cumulative sum of weights for efficient sampling
 
         double[] cumulativeWeights = ArrayPool<double>.Shared.Rent(candidates.Count);
@@ -277,7 +277,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
             var meshTransform = Transform3D.Identity;
             bool isBest = (particles[i] == bestCandidateParticle);
 
-            Godot.Vector3 Scale = isBest ? Godot.Vector3.One * 2 : Godot.Vector3.One;
+            Godot.Vector3 Scale = isBest ? new Godot.Vector3(1, 5, 1) : Godot.Vector3.One;
 
             meshTransform = meshTransform.Scaled(Scale).TranslatedLocal(new Godot.Vector3(particles[i].Coordinate.X, 0, particles[i].Coordinate.Y));
 
