@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace MyProject.Algorithms
 {
     public class GeneticAlgorithm
@@ -15,12 +17,19 @@ namespace MyProject.Algorithms
             this.genomeSize=genomeSize;
             this.k=torunamentSeelectionSize;
             this.parentSelectionPersentage = parentSelectionPersentage;
-            population = new Population(populationSize, genomeSize);
+            this.population = new Population(populationSize, genomeSize);
+            var populationEvaluate =  this.population.GetGenomes();
+            for (int i = 0; i < populationEvaluate.Length; i++)
+            {
+                populationEvaluate[i].evaluateFitness();
+                var fitness = populationEvaluate[i].getFitness();
+                //Console.WriteLine(fitness);
+            }
         }
         
         private Genome tournamentSelection()
         {   
-            //Console.WriteLine("--------------------------");
+            ///Console.WriteLine("--------------------------");
             //Console.WriteLine("Tournament Selection");
             Random.Shared.Shuffle(population.GetGenomes());
             var uniqueGenomes = population.GetGenomes().Take(3).ToArray();
@@ -54,6 +63,7 @@ namespace MyProject.Algorithms
 
         public float[] singlePointCrossover(float[] parent1, float[] parent2)
         {
+            //Console.WriteLine("single crossover");
             int length = parent1.Length;
             Random rand = new Random();
             int crossoverPoint = rand.Next(1, length); //not 0 or length
@@ -74,6 +84,7 @@ namespace MyProject.Algorithms
         public float[] mutate(float mutationRate, float[] childWeights)
         {
             Random random = new Random();
+            //Console.Write("in mutation");
             if (random.NextDouble() < mutationRate)
             {
                 Console.WriteLine("Mutation performed");
@@ -89,26 +100,31 @@ namespace MyProject.Algorithms
         {
             Console.WriteLine("Running Genetic Algorithm..."); //GA process: selection, crossover, mutation, etc.
             //Console.WriteLine("");
-            var population =  this.population.GetGenomes();
-            for (int i = 0; i < population.Length; i++)
-            {
-                population[i].evaluateFitness();
-                var fitness = population[i].getFitness();
-                //Console.WriteLine(fitness);
-            }
 
             //select parents 
             Genome[] parents = selectParents();
             //Console.WriteLine("Parent length: " + parents.Length);
 
+            for (int i = 0; i < parents.Length; i++)
+            {
+                Console.WriteLine($"Parent {i + 1}:");
+                float[] weights = parents[i].getGenome();
+                foreach (var weight in weights)
+                {
+                    Console.WriteLine(weight);
+                }
+                Console.WriteLine("Fitness: "+ parents[i].fitnessScore);
+            }
             //perform crossover + build new generation
             Genome[] newPopulation = new Genome[this.population.populationSize];
+            
             Random rand = new Random();
             int count=parents.Length;
             int parentCount=0;
             //Console.WriteLine("count: "+count);
             for (int i = 0; i < this.population.populationSize; i++)
             {   
+                //Console.WriteLine("population creation count: "+count);
                 if(i<this.population.populationSize-count){
                 //Select two random parents
                 Genome parent1 = parents[rand.Next(parents.Length)];
@@ -124,9 +140,23 @@ namespace MyProject.Algorithms
                 childWeights = mutate(mutationRate: mutationRate,childWeights);
 
                 //Create new genome
-                newPopulation[i] = new Genome(childWeights);
+                Genome childGenome = new Genome(childWeights);
+                childGenome.evaluateFitness();
+                newPopulation[i]=childGenome;
+                //print out childs weights
+                Console.WriteLine("child "+i + " weights:");
+                foreach (var weight in childWeights)
+                {
+                    Console.WriteLine(weight);
+                }
                 }else{
                     newPopulation[i] = parents[parentCount];
+                    float[] weights = parents[parentCount].getGenome();
+                    Console.WriteLine("child "+i + " weights:");
+                    foreach (var weight in weights)
+                    {
+                        Console.WriteLine(weight);
+                    }
                     parentCount++;
                 }
             }
@@ -136,16 +166,20 @@ namespace MyProject.Algorithms
             Console.WriteLine("new population size: "+newPopulation.Length);
 
             //Store best fit 
-            float bestFitness = -1000;
+            float bestFitness = 10000000;
             for (int i = 0; i < newPopulation.Length; i++)
-            {
+            {   
+                Console.WriteLine("parent "+ i+ "fitness: "+ newPopulation[i].getFitness());
                 float fitness = newPopulation[i].getFitness();
-                if (bestFitness == -1000 || fitness > bestFitness)
+                if (bestFitness == 10000000 || fitness < bestFitness)
                 {
                     bestFitness=fitness;
                 }
             }
             this.bestFitness=bestFitness;
+
+            Population newGeneration = new Population(newPopulation.Length,this.genomeSize,newPopulation);
+            this.population=newGeneration;
         }
     }
 
@@ -216,9 +250,17 @@ namespace MyProject.Algorithms
 
         public Population(int populationSize, int genomeSize)
         {
+            Console.WriteLine("Random Population initialization");
             this.populationSize = populationSize;
             this.genomeSize = genomeSize;
             InitializePopulation();
+        }
+        public Population(int populationSize, int genomeSize, Genome[] population)
+        {
+            Console.WriteLine("new Generation initialization");
+            this.populationSize = populationSize;
+            this.genomeSize = genomeSize;
+            this.genomes=population;
         }
 
         private void InitializePopulation()
@@ -235,6 +277,10 @@ namespace MyProject.Algorithms
         public Genome[] GetGenomes()
         {
             return this.genomes;
+        }
+        public void setPopulation(Genome[] newPopulation)
+        {
+            this.genomes = newPopulation;
         }
     }
 }
