@@ -8,11 +8,13 @@ public partial class SimulatedLidar : RayCast3D
     public double PulseInterval { get; set; } = 0.2;
 
     [Export]
-    public double NoiseVariance { get; set; } = 1;
+    public float NoiseVariance { get; set; } = 1;
 
     private double timeSinceLastPulse = 0;
 
     private Label3D distanceLabel = null!;
+
+    public float Distance { get; private set; }
 
     public Action<float, float, bool> OnRayCast;
 
@@ -29,7 +31,6 @@ public partial class SimulatedLidar : RayCast3D
             Text = "0.00",
             FontSize = 64
         });
-
     }
 
     public override void _Process(double delta)
@@ -52,9 +53,9 @@ public partial class SimulatedLidar : RayCast3D
         {
             var point = GetCollisionPoint();
 
-            float distance = GlobalPosition.DistanceTo(point);
-            updateLabel((float)Math.Max(0, distance + Random.Shared.NextSingle() * NoiseVariance));
-            OnRayCast?.Invoke(distance, Rotation.Y, true);
+            Distance = GlobalPosition.DistanceTo(point) + Random.Shared.NextSingle() * NoiseVariance;
+            updateLabel(Distance);
+            OnRayCast?.Invoke(Distance, Rotation.Y, true);
         }
     }
 

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Godot;
 
 public partial class SensorArray : Node3D
@@ -30,4 +32,6 @@ public partial class SensorArray : Node3D
             });
         }
     }
+
+    public IEnumerable<float> GetDistances() => GetChildren().Where(c => c is SimulatedLidar).Select(s => ((SimulatedLidar)s).Distance);
 }

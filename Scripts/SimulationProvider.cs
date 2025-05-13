@@ -45,10 +45,11 @@ public partial class SimulationProvider : Node
 
 
             SensorArray sensorArr = robotCharacter.GetDescendants<SensorArray>().First()!;
+            originalDistances = [.. sensorArr.GetDistances()];
+            SensorValues = [.. originalDistances];
 
             numSensor = sensorArr.NumberOfSensors;
             sensorRange = sensorArr.SensorRange;
-
         }
 
         private readonly int numSensor;
@@ -56,6 +57,7 @@ public partial class SimulationProvider : Node
         private readonly OccupancyMap occupancyMap;
         private readonly Vector3 originalPosition;
         private readonly float originalRotation;
+        private readonly float[] originalDistances;
 
         private float AccelerationPerSecond { get; set; } = 1;
 
@@ -73,6 +75,8 @@ public partial class SimulationProvider : Node
 
         public float LeftVel { get; private set; }
         public float RightVel { get; private set; }
+
+        public float[] SensorValues { get; private set; }
 
         public void Update(int leftInput, int rightInput)
         {
@@ -107,7 +111,7 @@ public partial class SimulationProvider : Node
             Position += movementVector;
         }
 
-        public int computeReward()
+        public int ComputeReward()
         {
             float angleStep = 2 * MathF.PI / numSensor;
 
@@ -120,7 +124,7 @@ public partial class SimulationProvider : Node
                 float angleDiff = angleStep * i;
                 var target = Position + line.Rotated(new(0, 1, 0), angleDiff + Rotation);
 
-                rewardSum += beamReward(Position, target);
+                rewardSum += beamReward(Position, target, i);
             }
 
             return rewardSum;
@@ -132,9 +136,10 @@ public partial class SimulationProvider : Node
             Rotation = originalRotation;
             LeftVel = originalLeftVel;
             RightVel = originalRightVel;
+            SensorValues = [.. originalDistances];
         }
 
-        private int beamReward(Vector3 origin, Vector3 target)
+        private int beamReward(Vector3 origin, Vector3 target, int index)
         {
             const float PRECISION = 0.01f;
 
@@ -173,6 +178,8 @@ public partial class SimulationProvider : Node
 
                 cell = nextCell;
             }
+
+            SensorValues[index] = (current - new Vector2(origin.X, origin.Z) + halfMapSize).Length();
 
             return rewardCount;
         }
