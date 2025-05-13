@@ -36,8 +36,10 @@ public class Model
         // Iterate through all layers in the Sequential container
         foreach (var layer in seq.modules())
         {
+
             if (layer is Linear linearLayer)
             {
+                using var d0 = torch.NewDisposeScope();
                 var weight = linearLayer.weight;
                 //Console.Write("---------------");
                 //Console.Write("inner weight count: "+weight.shape[0]*weight.shape[1]);

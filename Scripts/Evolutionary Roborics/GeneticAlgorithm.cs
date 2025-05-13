@@ -42,8 +42,10 @@ public class GeneticAlgorithm
         //Define the NN
         model.setWeights(individual.weights); // assign the weights to out NN
 
-        for (int i = 0; i < 1000; ++i)
+        for (int i = 0; i < 10; ++i)
         {
+            using var d0 = torch.NewDisposeScope();
+
             //here we get our observations but i am unsure how to retrieve them from godot dynamically so i am using place holder
             var seq = model.seq;
             using var eval = torch.tensor(neuralNetworkInputArray);
@@ -66,6 +68,7 @@ public class GeneticAlgorithm
     public (int, int) evaluateToGetAction(Genome individual, SimulationProvider.SimulationContext ctx)
     {
         ctx.Reset();
+        using var d0 = torch.NewDisposeScope();
 
         //Here we get sensor inputs and motor velocities for input
 
