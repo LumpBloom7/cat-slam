@@ -16,14 +16,14 @@ public partial class SimulationProvider : Node
         var rootNode = GetNode("/root");
 
         digitalRepresentations = [.. rootNode.GetDescendants<DigitalRepresentation>(true)];
-        robotCharacter = rootNode.GetDescendants<RobotCharacter>(false).First()!;
+        robotCharacter = rootNode.GetDescendants<RobotCharacter>(true).First()!;
     }
 
     public DigitalRepresentation? activeDigitalRepresentation => digitalRepresentations.FirstOrDefault(d => d.Visible);
 
     public SimulationContext createSimulationContext()
     {
-        var cDR = activeDigitalRepresentation;
+        var cDR = digitalRepresentations[0];
 
         return new SimulationContext(cDR!.OccupancyMap, cDR.Ghost.GlobalPosition, cDR.Ghost.GlobalRotation.Y, robotCharacter);
     }

@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://cg4dlisrpp3dm"]
+[gd_scene load_steps=23 format=3 uid="uid://cg4dlisrpp3dm"]
 
 [ext_resource type="Script" uid="uid://bmbtxts83u5tr" path="res://Scripts/RobotCharacter.cs" id="2_2dy0i"]
 [ext_resource type="PackedScene" uid="uid://dgqpwmfnga1gx" path="res://assets/marisa_fumo/scene.gltf" id="2_28gir"]
@@ -12,7 +12,9 @@
 [ext_resource type="Script" uid="uid://bw88sqd5ohy4" path="res://Scripts/Utils/VisibilityCycler.cs" id="12_waypw"]
 [ext_resource type="Script" uid="uid://vtvl8g2wbji7" path="res://Scripts/Utils/CameraCycler.cs" id="14_i451r"]
 [ext_resource type="Script" uid="uid://c1xrtvyvvnfad" path="res://Scripts/RobotPath.cs" id="14_oql0q"]
+[ext_resource type="Script" uid="uid://df02w2xa2efps" path="res://Scripts/Evolutionary Roborics/GANNControlProvider.cs" id="15_6eaws"]
 [ext_resource type="Script" uid="uid://bnmbwfvh2bjok" path="res://Scripts/DigitalRepresentation.cs" id="15_i451r"]
+[ext_resource type="Script" uid="uid://biuqenqtdfjkd" path="res://Scripts/SimulationProvider.cs" id="15_ofih1"]
 [ext_resource type="Shader" uid="uid://dtwhoplmqoos" path="res://assets/water.gdshader" id="19_4fmel"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_o0r38"]
@@ -171,6 +173,12 @@ InputMapAction = "SwitchCamera"
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 2, 0)
 projection = 1
 size = 30.0
+
+[node name="SimulationProvider" type="Node" parent="."]
+script = ExtResource("15_ofih1")
+
+[node name="GANNControlProvider" type="Node" parent="."]
+script = ExtResource("15_6eaws")
 
 [connection signal="GhostStateChanged" from="Robot" to="Digital representations/KalmanRepresentation" method="UpdateGhostPosition"]
 [connection signal="LeftMotorValueChanged" from="Robot" to="Robot/MotorLabels/Label3D" method="OnSignalReceived"]

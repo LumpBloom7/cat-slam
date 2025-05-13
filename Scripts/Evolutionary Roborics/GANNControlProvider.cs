@@ -24,7 +24,7 @@ public partial class GANNControlProvider : Node
     {
         base._Ready();
 
-        var sensorArray = GetNode("/root").GetDescendants<SensorArray>().FirstOrDefault();
+        var sensorArray = GetNode("/root").GetDescendants<SensorArray>(true).FirstOrDefault();
 
         if (sensorArray is null)
             return;
@@ -32,16 +32,17 @@ public partial class GANNControlProvider : Node
         int inputLength = 2 + sensorArray.NumberOfSensors;
 
         geneticAlgorithm = new GeneticAlgorithm(PopulationSize, inputLength, TournamentSize_k, ParentSelectionPercentage, MutationRate);
-        simulationProvider = GetNode("/root").GetDescendants<SimulationProvider>().FirstOrDefault();
+        simulationProvider = GetNode("/root").GetDescendants<SimulationProvider>(true).FirstOrDefault();
     }
 
     public (int, int) GANNInput { get; private set; } = (0, 0);
 
     public override void _PhysicsProcess(double delta)
     {
+
+
         if (geneticAlgorithm is null || simulationProvider is null)
             return;
-
         var simulation = simulationProvider.createSimulationContext();
 
         //Run the Genetic Algorithm up to (50) times
@@ -68,5 +69,6 @@ public partial class GANNControlProvider : Node
             return;
 
         GANNInput = geneticAlgorithm.evaluateToGetAction(bestGenome, simulation);
+        GD.Print(GANNInput);
     }
 }

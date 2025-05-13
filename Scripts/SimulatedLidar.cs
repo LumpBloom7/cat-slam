@@ -16,7 +16,7 @@ public partial class SimulatedLidar : RayCast3D
 
     public float Distance { get; private set; }
 
-    public Action<float, float, bool> OnRayCast;
+    public Action<float, float, bool>? OnRayCast;
 
     public override void _Ready()
     {

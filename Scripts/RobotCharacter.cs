@@ -40,12 +40,18 @@ public partial class RobotCharacter : CharacterBody3D
 
     private KalmanFilter? kalmanFilter { get; set; } = null;
 
+    private GANNControlProvider? gannControlProvider = null;
+
     private Node3D ghostNode = null!;
+
+    private bool useGannControl = true;
 
     public override void _Ready()
     {
         base._Ready();
         AddChild(BeaconDetector = new BeaconDetector(OmnidirectionalSensorRange));
+
+        gannControlProvider = GetNode("/root").GetDescendants<GANNControlProvider>(true).FirstOrDefault();
     }
 
     public void InitPosition(Vector2 position)
@@ -79,15 +85,24 @@ public partial class RobotCharacter : CharacterBody3D
         // Compute acceleration amounts
         float leftAcc = 0;
         float rightAcc = 0;
-        if (Input.IsActionPressed("LeftMotorForwards"))
-            leftAcc += AccelerationPerSecond * (float)delta;
-        if (Input.IsActionPressed("LeftMotorBackwards"))
-            leftAcc -= AccelerationPerSecond * (float)delta;
 
-        if (Input.IsActionPressed("RightMotorForwards"))
-            rightAcc += AccelerationPerSecond * (float)delta;
-        if (Input.IsActionPressed("RightMotorBackwards"))
-            rightAcc -= AccelerationPerSecond * (float)delta;
+        if (gannControlProvider is not null && useGannControl)
+        {
+            leftAcc += AccelerationPerSecond * (float)delta * gannControlProvider.GANNInput.Item1;
+            rightAcc += AccelerationPerSecond * (float)delta * gannControlProvider.GANNInput.Item2;
+        }
+        else
+        {
+            if (Input.IsActionPressed("LeftMotorForwards"))
+                leftAcc += AccelerationPerSecond * (float)delta;
+            if (Input.IsActionPressed("LeftMotorBackwards"))
+                leftAcc -= AccelerationPerSecond * (float)delta;
+
+            if (Input.IsActionPressed("RightMotorForwards"))
+                rightAcc += AccelerationPerSecond * (float)delta;
+            if (Input.IsActionPressed("RightMotorBackwards"))
+                rightAcc -= AccelerationPerSecond * (float)delta;
+        }
 
         // Apply speed changes
         if (leftAcc == 0)

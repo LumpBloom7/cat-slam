@@ -15,6 +15,7 @@ public class GeneticAlgorithm
     private Model model;
     public Genome? bestGenome = null;
 
+    private float[] neuralNetworkInputArray;
     public GeneticAlgorithm(int populationSize, int numberOfInputs, int tournamentSelectionSize, float parentSelectionPercentage, float mutationRate)
     {
         this.mutationRate = mutationRate;
@@ -25,6 +26,8 @@ public class GeneticAlgorithm
         this.parentSelectionPercentage = parentSelectionPercentage;
 
         population = new Population(populationSize, genomeSize);
+
+        neuralNetworkInputArray = new float[numberOfInputs];
     }
 
     private float evaluate(Genome individual, SimulationProvider.SimulationContext ctx)
@@ -32,12 +35,9 @@ public class GeneticAlgorithm
         // Reset the environment
         ctx.Reset();
 
-        float[] neuralNetworkInput = ArrayPool<float>.Shared.Rent(ctx.SensorValues.Length + 2);
-
-        //Here we get sensor inputs and motor velocities for input
-        ctx.SensorValues.CopyTo(neuralNetworkInput, 0);
-        neuralNetworkInput[neuralNetworkInput.Length] = ctx.LeftVel;
-        neuralNetworkInput[neuralNetworkInput.Length + 1] = ctx.RightVel;
+        ctx.SensorValues.CopyTo(neuralNetworkInputArray, 0);
+        neuralNetworkInputArray[^2] = ctx.LeftVel;
+        neuralNetworkInputArray[^1] = ctx.RightVel;
 
         //Define the NN
         model.setWeights(individual.weights); // assign the weights to out NN
@@ -46,7 +46,7 @@ public class GeneticAlgorithm
         {
             //here we get our observations but i am unsure how to retrieve them from godot dynamically so i am using place holder
             var seq = model.seq;
-            using var eval = torch.tensor(neuralNetworkInput);
+            using var eval = torch.tensor(neuralNetworkInputArray);
             //perform step
             using var action = seq.forward(eval);
 
@@ -55,12 +55,11 @@ public class GeneticAlgorithm
             ctx.Update((int)Math.Round(data[0]), (int)Math.Round(data[1])); //update enviroment
 
             //update neural network inputs for next step
-            ctx.SensorValues.CopyTo(neuralNetworkInput, 0);
-            neuralNetworkInput[neuralNetworkInput.Length] = ctx.LeftVel;
-            neuralNetworkInput[neuralNetworkInput.Length + 1] = ctx.RightVel;
+            ctx.SensorValues.CopyTo(neuralNetworkInputArray, 0);
+            neuralNetworkInputArray[^2] = ctx.LeftVel;
+            neuralNetworkInputArray[^1] = ctx.RightVel;
         }
 
-        ArrayPool<float>.Shared.Return(neuralNetworkInput);
 
         return ctx.ComputeReward(); // placeholder
     }
@@ -68,16 +67,15 @@ public class GeneticAlgorithm
     {
         ctx.Reset();
 
-        float[] neuralNetworkInput = ArrayPool<float>.Shared.Rent(ctx.SensorValues.Length + 2);
-
         //Here we get sensor inputs and motor velocities for input
-        ctx.SensorValues.CopyTo(neuralNetworkInput, 0);
-        neuralNetworkInput[neuralNetworkInput.Length] = ctx.LeftVel;
-        neuralNetworkInput[neuralNetworkInput.Length + 1] = ctx.RightVel;
+
+        ctx.SensorValues.CopyTo(neuralNetworkInputArray, 0);
+        neuralNetworkInputArray[^2] = ctx.LeftVel;
+        neuralNetworkInputArray[^1] = ctx.RightVel;
 
         model.setWeights(individual.weights); // assign the weights to out NN
         var seq = model.seq;
-        using var x = torch.tensor(neuralNetworkInput); // forgot we need to include sensor Input+ motor inputs
+        using var x = torch.tensor(neuralNetworkInputArray); // forgot we need to include sensor Input+ motor inputs
         using var action = seq.forward(x);
 
         int leftMotorReading = (int)Math.Round(x.data<float>()[0]);

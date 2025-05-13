@@ -47,7 +47,7 @@ public class Model
                 //Create a tensor from the external weights and reshape it to the correct shape
                 var weightTensor = torch.tensor(externalWeights[index..(index + numWeights)]).reshape([outputSize, inputSize]);
                 //Use copy_() to assign the weights to the layer's weight tensor
-                linearLayer.weight.copy_(weightTensor);
+                linearLayer.weight = new Parameter(weightTensor);
                 index += numWeights;
             }
         }
