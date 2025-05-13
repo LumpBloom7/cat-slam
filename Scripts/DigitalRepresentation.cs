@@ -2,8 +2,9 @@ using Godot;
 
 public partial class DigitalRepresentation : Node3D
 {
-    private GhostRobot ghostRobot = null!;
-    private OccupancyMap occupancyMap = null!;
+    public GhostRobot Ghost { get; private set; } = null!;
+    public OccupancyMap OccupancyMap { get; private set; } = null!;
+
     private RobotPath path = null!;
 
     [Export]
@@ -18,8 +19,8 @@ public partial class DigitalRepresentation : Node3D
     public override void _Ready()
     {
         base._Ready();
-        AddChild(ghostRobot = new GhostRobot(Colour));
-        AddChild(occupancyMap = new OccupancyMap()
+        AddChild(Ghost = new GhostRobot(Colour));
+        AddChild(OccupancyMap = new OccupancyMap()
         {
             MapSize = MapSize,
             CellSize = CellSize,
@@ -34,20 +35,20 @@ public partial class DigitalRepresentation : Node3D
 
     public void UpdateGhostPosition(Vector3 vector3, Vector3 rotation)
     {
-        ghostRobot.GlobalPosition = vector3;
-        ghostRobot.GlobalRotation = rotation;
+        Ghost.GlobalPosition = vector3;
+        Ghost.GlobalRotation = rotation;
 
         path.OnPositionChanged(vector3);
     }
 
     public void UpdateOccupancyMap(float distance, float angle, bool isHit)
     {
-        var origin = ghostRobot.GlobalPosition;
-        var directionVector = (Vector3.Forward * distance).Rotated(new Vector3(0, 1, 0), angle + ghostRobot.GlobalRotation.Y);
-        occupancyMap.ProcessRayCast(origin, origin + directionVector, isHit);
+        var origin = Ghost.GlobalPosition;
+        var directionVector = (Vector3.Forward * distance).Rotated(new Vector3(0, 1, 0), angle + Ghost.GlobalRotation.Y);
+        OccupancyMap.ProcessRayCast(origin, origin + directionVector, isHit);
     }
 
-    private partial class GhostRobot : Node3D
+    public partial class GhostRobot : Node3D
     {
         public GhostRobot(Color colour)
         {

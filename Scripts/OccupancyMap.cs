@@ -14,8 +14,7 @@ public partial class OccupancyMap : MultiMeshInstance3D
     [Export]
     public Color CellColour { get; set; } = Color.Color8(255, 0, 255);
 
-
-    private Cell[,] cellContents = null!;
+    public Cell[,] CellContents { get; private set; } =  null!;
 
     private StandardMaterial3D material = null!;
 
@@ -49,16 +48,16 @@ public partial class OccupancyMap : MultiMeshInstance3D
         Multimesh.VisibleInstanceCount = Width * Height;
 
         Position = -new Vector3(Width * CellSize.X, 0, Height * CellSize.Y) / 2;
-        cellContents = new Cell[Height, Width];
+        CellContents = new Cell[Height, Width];
 
-        for (int y = 0; y < cellContents.GetLength(0); ++y)
+        for (int y = 0; y < CellContents.GetLength(0); ++y)
         {
-            for (int x = 0; x < cellContents.GetLength(1); ++x)
+            for (int x = 0; x < CellContents.GetLength(1); ++x)
             {
                 int index = y * Height + x;
                 var meshTransform = Transform3D.Identity;
 
-                var cell = cellContents[y, x] = new Cell
+                var cell = CellContents[y, x] = new Cell
                 {
                     X = x,
                     Y = y,
@@ -111,13 +110,13 @@ public partial class OccupancyMap : MultiMeshInstance3D
             bool isFilled = i == cells.Length - 1 && isColliding;
             var cell = cells[i];
 
-            if (cell.Y < 0 || cell.Y >= cellContents.GetLength(0))
+            if (cell.Y < 0 || cell.Y >= CellContents.GetLength(0))
                 continue;
 
-            if (cell.X < 0 || cell.X >= cellContents.GetLength(1))
+            if (cell.X < 0 || cell.X >= CellContents.GetLength(1))
                 continue;
 
-            ref var cellContent = ref cellContents[cell.Y, cell.X];
+            ref var cellContent = ref CellContents[cell.Y, cell.X];
 
             float dist = new Vector2(cell.X * CellSize.X, cell.Y * CellSize.Y).DistanceTo(new Vector2(origin.X, origin.Z) + MapSize / 2);
             float prob = ((isFilled ? 1 : 0) - 0.5f) * (1 - Math.Clamp(dist, 0, 5) / 5);
