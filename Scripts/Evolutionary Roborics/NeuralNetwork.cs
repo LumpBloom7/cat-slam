@@ -12,7 +12,7 @@ public class Model
         Linear lin3 = Linear(inputSize: 8, outputSize: outputDimension);
         ReLU relu = ReLU();
         var tanh = Tanh();
-        seq = Sequential(lin1, lin2, lin3, relu, tanh);
+        seq = Sequential(lin1, relu, lin2, relu, lin3, tanh);
     }
     public int countNeurons()
     {
