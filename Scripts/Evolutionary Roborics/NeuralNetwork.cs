@@ -11,8 +11,8 @@ public class Model
         Linear lin2 = Linear(inputSize: 12, outputSize: 8);
         Linear lin3 = Linear(inputSize: 8, outputSize: outputDimension);
         ReLU relu = ReLU();
-        var softmax = Softmax(-1);
-        seq = Sequential(lin1, lin2, lin3, relu, softmax);
+        var tanh = Tanh();
+        seq = Sequential(lin1, lin2, lin3, relu, tanh);
     }
     public int countNeurons()
     {
