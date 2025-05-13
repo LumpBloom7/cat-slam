@@ -1,4 +1,5 @@
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -6,87 +7,84 @@ using TorchSharp;
 
 public class GeneticAlgorithm
 {
-    private int k;
+    private readonly int k;
     public Population population;
-    private float parentSelectionPersentage;
-    private int genomeSize;
-    float mutationRate;
+    private readonly float parentSelectionPercentage;
+    private readonly int genomeSize;
+    private readonly float mutationRate;
     private Model model;
-    public Genome bestGenome;
-    SimulationProvider.SimulationContext simulation;
+    public Genome? bestGenome = null;
 
-    public GeneticAlgorithm(int populationSize, int genomeSize, int torunamentSeelectionSize, float parentSelectionPersentage, float mutationRate, Model model,SimulationProvider.SimulationContext simulation)
+    public GeneticAlgorithm(int populationSize, int numberOfInputs, int tournamentSelectionSize, float parentSelectionPercentage, float mutationRate)
     {
         this.mutationRate = mutationRate;
-        this.genomeSize = genomeSize;
-        k = torunamentSeelectionSize;
-        this.parentSelectionPersentage = parentSelectionPersentage;
+
+        model = new Model(numberOfInputs, 2);
+        genomeSize = model.countNeurons();
+        k = tournamentSelectionSize;
+        this.parentSelectionPercentage = parentSelectionPercentage;
+
         population = new Population(populationSize, genomeSize);
-        var populationEvaluate = population.Genomes;
-        this.model = model;
-        this.simulation=simulation;
-        for (int i = 0; i < populationEvaluate.Length; i++)
-        {
-            //populationEvaluate[i].evaluateFitness();
-            populationEvaluate[i].FitnessScore = evaluate(populationEvaluate[i]);
-            //float fitness = populationEvaluate[i].FitnessScore;
-            //Console.WriteLine(fitness);
-        }
     }
 
-    private float evaluate(Genome individual)
-    { // accepts an individual (We will simulate his game)
-      //Here we get sensor inputs and motor velocities for input + restart the enviroment
-        simulation.Reset();
+    private float evaluate(Genome individual, SimulationProvider.SimulationContext ctx)
+    {
+        // Reset the environment
+        ctx.Reset();
 
-        float[] sensorInput = simulation.SensorValues;
-        float[] motorVelocity = [simulation.LeftVel, simulation.RightVel];
-        float[] neuralNetworkInput = new float[sensorInput.Length + motorVelocity.Length];
-        sensorInput.CopyTo(neuralNetworkInput, 0);
-        motorVelocity.CopyTo(neuralNetworkInput, sensorInput.Length);
+        float[] neuralNetworkInput = ArrayPool<float>.Shared.Rent(ctx.SensorValues.Length + 2);
+
+        //Here we get sensor inputs and motor velocities for input
+        ctx.SensorValues.CopyTo(neuralNetworkInput, 0);
+        neuralNetworkInput[neuralNetworkInput.Length] = ctx.LeftVel;
+        neuralNetworkInput[neuralNetworkInput.Length + 1] = ctx.RightVel;
 
         //Define the NN
         model.setWeights(individual.weights); // assign the weights to out NN
-        int step = 0;
-        int award = 0;
 
-        while (step < 1000)
+        for (int i = 0; i < 1000; ++i)
         {
-
             //here we get our observations but i am unsure how to retrieve them from godot dynamically so i am using place holder
             var seq = model.seq;
-            var eval = torch.tensor(neuralNetworkInput);
+            using var eval = torch.tensor(neuralNetworkInput);
             //perform step
             using var action = seq.forward(eval);
-            simulation.Update((int)Math.Round(eval.data<float>()[0]), (int)Math.Round(eval.data<float>()[1])); //update enviroment
-            award = simulation.ComputeReward();
-            //update neural network inputs
-            simulation.SensorValues.CopyTo(neuralNetworkInput, 0);
-            motorVelocity[0] = simulation.LeftVel;
-            motorVelocity[1] = simulation.RightVel;
-            motorVelocity.CopyTo(neuralNetworkInput, sensorInput.Length);
-            step = step + 1;
-        }
-        return 1f; // placeholder
-    }
-    public (int, int) evaluateToGetAction(Genome individual)
-    { 
-        simulation.Reset();
 
-        float[] sensorInput = simulation.SensorValues;
-        float[] motorVelocity = [simulation.LeftVel, simulation.RightVel];
-        float[] neuralNetworkInput = new float[sensorInput.Length + motorVelocity.Length];
-        sensorInput.CopyTo(neuralNetworkInput, 0);
-        motorVelocity.CopyTo(neuralNetworkInput, sensorInput.Length);
+            var data = eval.data<float>();
+
+            ctx.Update((int)Math.Round(data[0]), (int)Math.Round(data[1])); //update enviroment
+
+            //update neural network inputs for next step
+            ctx.SensorValues.CopyTo(neuralNetworkInput, 0);
+            neuralNetworkInput[neuralNetworkInput.Length] = ctx.LeftVel;
+            neuralNetworkInput[neuralNetworkInput.Length + 1] = ctx.RightVel;
+        }
+
+        ArrayPool<float>.Shared.Return(neuralNetworkInput);
+
+        return ctx.ComputeReward(); // placeholder
+    }
+    public (int, int) evaluateToGetAction(Genome individual, SimulationProvider.SimulationContext ctx)
+    {
+        ctx.Reset();
+
+        float[] neuralNetworkInput = ArrayPool<float>.Shared.Rent(ctx.SensorValues.Length + 2);
+
+        //Here we get sensor inputs and motor velocities for input
+        ctx.SensorValues.CopyTo(neuralNetworkInput, 0);
+        neuralNetworkInput[neuralNetworkInput.Length] = ctx.LeftVel;
+        neuralNetworkInput[neuralNetworkInput.Length + 1] = ctx.RightVel;
 
         model.setWeights(individual.weights); // assign the weights to out NN
         var seq = model.seq;
-        var x = torch.tensor(neuralNetworkInput); // forgot we need to include sensor Input+ motor inputs
+        using var x = torch.tensor(neuralNetworkInput); // forgot we need to include sensor Input+ motor inputs
         using var action = seq.forward(x);
+
         int leftMotorReading = (int)Math.Round(x.data<float>()[0]);
         int rightMotorReading = (int)Math.Round(x.data<float>()[1]);
         return (leftMotorReading, rightMotorReading); // placeholder
     }
+
     private Genome tournamentSelection()
     {
         ///Console.WriteLine("--------------------------");
@@ -101,7 +99,7 @@ public class GeneticAlgorithm
     private Genome[] selectParents()
     {
         // Calculate 10% of the population size
-        int numberOfParents = (int)(population.PopulationSize * parentSelectionPersentage);
+        int numberOfParents = (int)(population.PopulationSize * parentSelectionPercentage);
         if (numberOfParents < 2)
             return [];
 
@@ -150,7 +148,7 @@ public class GeneticAlgorithm
     }
 
 
-    public void Run()
+    public void Run(SimulationProvider.SimulationContext ctx)
     {
         Console.WriteLine("Running Genetic Algorithm..."); //GA process: selection, crossover, mutation, etc.
                                                            //Console.WriteLine("");
@@ -182,22 +180,12 @@ public class GeneticAlgorithm
 
             //Create new genome
             Genome childGenome = new Genome(childWeights);
-            childGenome.FitnessScore = evaluate(childGenome);
+            childGenome.FitnessScore = evaluate(childGenome, ctx);
             //childGenome.evaluateFitness();
             newPopulation.Add(childGenome);
         }
 
-        //Store best fit
-        float bestFitness = 10000000;
-        for (int i = 0; i < newPopulation.Count; i++)
-        {
-            Console.WriteLine("parent " + i + "fitness: " + newPopulation[i].FitnessScore);
-            float fitness = newPopulation[i].FitnessScore;
-            if (bestFitness == 10000000 || fitness < bestFitness)
-            {
-                bestGenome = newPopulation[i];
-            }
-        }
+        bestGenome = newPopulation.MaxBy(g => g.FitnessScore);
 
         Population newGeneration = new Population(genomeSize, [.. newPopulation]);
         population = newGeneration;

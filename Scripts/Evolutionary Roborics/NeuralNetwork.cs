@@ -28,7 +28,8 @@ public class Model
         }
         return totalWeights;
     }
-    public void setWeights(float[] externalWeights) 
+
+    public void setWeights(float[] externalWeights)
     {
         int index = 0;
 
@@ -44,9 +45,9 @@ public class Model
                 int outputSize = (int)weight.shape[0];
                 int inputSize = (int)weight.shape[1];
                 //Create a tensor from the external weights and reshape it to the correct shape
-                var weightTensor = torch.tensor(externalWeights[index..(index + numWeights)]).reshape(new long[] { outputSize, inputSize });
+                var weightTensor = torch.tensor(externalWeights[index..(index + numWeights)]).reshape([outputSize, inputSize]);
                 //Use copy_() to assign the weights to the layer's weight tensor
-                linearLayer.weight.copy_(weightTensor); 
+                linearLayer.weight.copy_(weightTensor);
                 index += numWeights;
             }
         }
