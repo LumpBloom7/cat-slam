@@ -157,6 +157,7 @@ size_flags_horizontal = 0
 size_flags_vertical = 0
 text = "Tab: Cycle digital representations
 C: Cycle camera views
+H: Toggle geometry
 Q/A : Accelerate/Decelerate left wheel
 E/D : Accelerate/Decelerate right wheel
 W/S: Accelerate/Decelerate both wheels"

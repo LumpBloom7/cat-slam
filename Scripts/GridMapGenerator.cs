@@ -22,6 +22,14 @@ public partial class GridMapGenerator : GridMap
         GetNode("/root").GetChild(0).CallDeferred(Node.MethodName.AddChild, BeaconStorageNode);
     }
 
+    public override void _Input(InputEvent @event)
+    {
+        base._Input(@event);
+
+        if (@event.IsActionPressed("ToggleGeometry", false))
+            Visible = !Visible;
+    }
+
 
     private void GenerateMap(Tile[][]? bitmap)
     {
