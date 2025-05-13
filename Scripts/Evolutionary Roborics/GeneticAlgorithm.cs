@@ -1,4 +1,7 @@
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using MyProject.NeuralNetwork;
+using TorchSharp;
 
 namespace MyProject.Algorithms
 {
@@ -13,64 +16,83 @@ namespace MyProject.Algorithms
 
         public GeneticAlgorithm(int populationSize, int genomeSize, int torunamentSeelectionSize, float parentSelectionPersentage, float mutationRate)
         {
-            this.mutationRate=mutationRate;
-            this.genomeSize=genomeSize;
-            this.k=torunamentSeelectionSize;
+            this.mutationRate = mutationRate;
+            this.genomeSize = genomeSize;
+            this.k = torunamentSeelectionSize;
             this.parentSelectionPersentage = parentSelectionPersentage;
             this.population = new Population(populationSize, genomeSize);
-            var populationEvaluate =  this.population.GetGenomes();
+            var populationEvaluate = this.population.Genomes;
             for (int i = 0; i < populationEvaluate.Length; i++)
             {
-                populationEvaluate[i].evaluateFitness();
-                var fitness = populationEvaluate[i].getFitness();
+                //populationEvaluate[i].evaluateFitness();
+                populationEvaluate[i].FitnessScore = evaluate(populationEvaluate[i]);
+                float fitness = populationEvaluate[i].FitnessScore;
                 //Console.WriteLine(fitness);
             }
         }
-        
+
+        private float evaluate(Genome individual){ // accepts an individual (We will simulate his game)
+            //Here we get sensor inputs and motor velocities for input + restart the enviroment
+            float[] sensorInput = [3.0f,4.0f,1.0f,3.0f];
+            float[] motorVelocity = [0.2f,1.4f];
+            //Define the NN 
+            Model model = new Model(sensorInput.Length,motorVelocity.Length);
+            model.setWeights(individual.weights); // assign the weights to out NN
+            int step = 0;
+            int award=0;
+
+            while(step<1000){
+            // here we get our observations but i am unsure how to retrieve them from godot dynamically so i am using place holder
+                var seq = model.seq;
+                var x = torch.tensor(sensorInput); // forgot we need to include sensor Input+ motor inputs
+                var y = torch.tensor(new float[]{2f,3f});
+                //perform step
+                using var action  = seq.forward(x);
+                //Now that we have an action we perform a move in out enviroment from which we get award (like hitting wall -200 or smth, collecting a cat +1000)
+                // reward, observation = envitoment.step()
+                //award += reward
+                step = step+1;
+                //sensorInput = obs2 set to new sensor readings
+            }
+            return 1f; // placeholder 
+        }
         private Genome tournamentSelection()
-        {   
+        {
             ///Console.WriteLine("--------------------------");
             //Console.WriteLine("Tournament Selection");
-            Random.Shared.Shuffle(population.GetGenomes());
-            var uniqueGenomes = population.GetGenomes().Take(3).ToArray();
+            Debug.Assert(population.Genomes.Length > 0);
 
-            Genome bestGenome = null;
-            foreach (var genome in uniqueGenomes)
-            {
-                if (bestGenome == null || genome.fitnessScore < bestGenome.fitnessScore) // the smaller the better!
-                {
-                    bestGenome = genome;
-                }
-            }
-            float[] bestGenomeWeight = bestGenome.getGenome();
-            //Console.WriteLine("best genome: "+bestGenomeWeight);
-            return bestGenome;
+            Random.Shared.Shuffle(population.Genomes);
+
+            return population.Genomes.Take(k).MinBy(g => g.FitnessScore)!;
         }
+
         private Genome[] selectParents()
         {
             // Calculate 10% of the population size
-            int numberOfParents = (int)(this.population.GetGenomes().Length *  this.parentSelectionPersentage);
-            Genome[] selectedParents = new Genome[numberOfParents];
-            //Console.WriteLine("---------------");
-            //Console.WriteLine("Selecting Patents");
-            for (int i = 0; i < numberOfParents; i++)
-            {
-                selectedParents[i] = tournamentSelection();
-                 //Console.WriteLine("Selected Parent: "+ selectedParents[i]);
-            }
-            return selectedParents;
+            int numberOfParents = (int)(population.PopulationSize * parentSelectionPersentage);
+            if (numberOfParents < 2)
+                return [];
+
+            HashSet<Genome> selectedParents = [];
+
+            while (selectedParents.Count < numberOfParents)
+                selectedParents.Add(tournamentSelection());
+
+            return [.. selectedParents];
         }
 
         public float[] singlePointCrossover(float[] parent1, float[] parent2)
         {
             //Console.WriteLine("single crossover");
             int length = parent1.Length;
-            Random rand = new Random();
+            Random rand = Random.Shared;
             int crossoverPoint = rand.Next(1, length); //not 0 or length
-            float[] child = new float[length];
 
             //Randomly choose which parent contributes the first half
             bool firstHalfFromParent1 = rand.NextDouble() < 0.5;
+            float[] child = new float[length];
+
             for (int i = 0; i < length; i++)
             {
                 if (i < crossoverPoint)
@@ -81,20 +103,21 @@ namespace MyProject.Algorithms
 
             return child;
         }
+
         public float[] mutate(float mutationRate, float[] childWeights)
         {
-            Random random = new Random();
+            Random random = Random.Shared;
+
             //Console.Write("in mutation");
             if (random.NextDouble() < mutationRate)
             {
                 Console.WriteLine("Mutation performed");
                 int index = random.Next(childWeights.Length);
                 childWeights[index] += (float)(random.NextDouble() * 2 - 1); //Random between -1 and 1 
-             }
-             return childWeights;
-            
+            }
+            return childWeights;
         }
-        
+
 
         public void Run()
         {
@@ -102,30 +125,17 @@ namespace MyProject.Algorithms
             //Console.WriteLine("");
 
             //select parents 
-            Genome[] parents = selectParents();
+            var parents = selectParents();
             //Console.WriteLine("Parent length: " + parents.Length);
 
-            for (int i = 0; i < parents.Length; i++)
+            // Create new population, include parents implicitly
+            List<Genome> newPopulation = [.. parents];
+
+            Random rand = Random.Shared;
+
+            while (newPopulation.Count < population.PopulationSize)
             {
-                Console.WriteLine($"Parent {i + 1}:");
-                float[] weights = parents[i].getGenome();
-                foreach (var weight in weights)
-                {
-                    Console.WriteLine(weight);
-                }
-                Console.WriteLine("Fitness: "+ parents[i].fitnessScore);
-            }
-            //perform crossover + build new generation
-            Genome[] newPopulation = new Genome[this.population.populationSize];
-            
-            Random rand = new Random();
-            int count=parents.Length;
-            int parentCount=0;
-            //Console.WriteLine("count: "+count);
-            for (int i = 0; i < this.population.populationSize; i++)
-            {   
                 //Console.WriteLine("population creation count: "+count);
-                if(i<this.population.populationSize-count){
                 //Select two random parents
                 Genome parent1 = parents[rand.Next(parents.Length)];
                 Genome parent2 = parents[rand.Next(parents.Length)];
@@ -134,60 +144,40 @@ namespace MyProject.Algorithms
                     parent2 = parents[rand.Next(parents.Length)];
 
                 //Perform crossover
-                float[] childWeights = singlePointCrossover(parent1.getGenome(), parent2.getGenome());
+                float[] childWeights = singlePointCrossover(parent1.weights, parent2.weights);
 
                 //Perform mutation
-                childWeights = mutate(mutationRate: mutationRate,childWeights);
+                childWeights = mutate(mutationRate: mutationRate, childWeights);
 
                 //Create new genome
                 Genome childGenome = new Genome(childWeights);
-                childGenome.evaluateFitness();
-                newPopulation[i]=childGenome;
-                //print out childs weights
-                Console.WriteLine("child "+i + " weights:");
-                foreach (var weight in childWeights)
-                {
-                    Console.WriteLine(weight);
-                }
-                }else{
-                    newPopulation[i] = parents[parentCount];
-                    float[] weights = parents[parentCount].getGenome();
-                    Console.WriteLine("child "+i + " weights:");
-                    foreach (var weight in weights)
-                    {
-                        Console.WriteLine(weight);
-                    }
-                    parentCount++;
-                }
+                childGenome.FitnessScore=evaluate(childGenome);
+                //childGenome.evaluateFitness();
+                newPopulation.Add(childGenome);
             }
-            count++;
-    
-            //Console.WriteLine("---------------------");
-            Console.WriteLine("new population size: "+newPopulation.Length);
 
             //Store best fit 
             float bestFitness = 10000000;
-            for (int i = 0; i < newPopulation.Length; i++)
-            {   
-                Console.WriteLine("parent "+ i+ "fitness: "+ newPopulation[i].getFitness());
-                float fitness = newPopulation[i].getFitness();
+            for (int i = 0; i < newPopulation.Count; i++)
+            {
+                Console.WriteLine("parent " + i + "fitness: " + newPopulation[i].FitnessScore);
+                float fitness = newPopulation[i].FitnessScore;
                 if (bestFitness == 10000000 || fitness < bestFitness)
                 {
-                    bestFitness=fitness;
+                    bestFitness = fitness;
                 }
             }
-            this.bestFitness=bestFitness;
+            this.bestFitness = bestFitness;
 
-            Population newGeneration = new Population(newPopulation.Length,this.genomeSize,newPopulation);
-            this.population=newGeneration;
+            Population newGeneration = new Population(genomeSize, [.. newPopulation]);
+            population = newGeneration;
         }
     }
 
     public class Genome
     {
-
-        public float fitnessScore;
-        public float[] weights; // At start initialize weights (they are equal to the amount of neurons in NN)
+        public float FitnessScore { get; set; }
+        public float[] weights { get; set; } // At start initialize weights (they are equal to the amount of neurons in NN)
         public Genome(int numWeights) //Initialize random weights
         {
             //Initialize weights with random values between -1 and 1
@@ -197,90 +187,67 @@ namespace MyProject.Algorithms
             {
                 weights[i] = (float)(random.NextDouble() * 2 - 1); // Random between -1 and 1
             }
-            setGenome(weights);
         }
+
         public Genome(float[] weights) //Initialize with predefined weights 
         {
             this.weights = weights;
         }
-        public float[] getGenome()
-        {
-            return this.weights;
-        }
-        public void setGenome(float[] weights)
-        {
-            this.weights = weights;
-        }
-        public void evaluateFitness()
-        {
-            float errorSum = 0;
-            int numSamples = 100; // Number of samples to test the polynomial on
-            float xMin = -10f; // Minimum x value for testing
-            float xMax = 10f;  // Maximum x value for testing
-            float step = (xMax - xMin) / numSamples; // Step size to sample values of x
 
-            // Iterate over x values to calculate the error (MSE)
-            for (float x = xMin; x <= xMax; x += step)
-            {
-                // Genome represents the polynomial coefficients: a, b, c (for a*x^2 + b*x + c)
-                float polynomialValue = this.weights[0] * x * x + this.weights[1] * x + this.weights[2]; // ax^2 + bx + c
-                float targetValue = TargetPolynomial(x); // Target polynomial value
+        // public void evaluateFitness()
+        // {
+        //     float errorSum = 0;
+        //     int numSamples = 100; // Number of samples to test the polynomial on
+        //     float xMin = -10f; // Minimum x value for testing
+        //     float xMax = 10f;  // Maximum x value for testing
+        //     float step = (xMax - xMin) / numSamples; // Step size to sample values of x
 
-                // Compute the squared error between the genome's polynomial and the target polynomial
-                errorSum += (polynomialValue - targetValue) * (polynomialValue - targetValue);
-            }
+        //     // Iterate over x values to calculate the error (MSE)
+        //     for (float x = xMin; x <= xMax; x += step)
+        //     {
+        //         // Genome represents the polynomial coefficients: a, b, c (for a*x^2 + b*x + c)
+        //         float polynomialValue = this.weights[0] * x * x + this.weights[1] * x + this.weights[2]; // ax^2 + bx + c
+        //         float targetValue = TargetPolynomial(x); // Target polynomial value
 
-            // Return the mean squared error (MSE)
-            this.fitnessScore = errorSum/numSamples;
-        }
-        public float getFitness(){
-            return this.fitnessScore;
-        }
-        public static float TargetPolynomial(float x)
-        {
-            return x * x + 3 * x + 2;
-        }
+        //         // Compute the squared error between the genome's polynomial and the target polynomial
+        //         errorSum += (polynomialValue - targetValue) * (polynomialValue - targetValue);
+        //     }
+
+        //     // Return the mean squared error (MSE)
+        //     this.FitnessScore = errorSum / numSamples;
+        // }
+
+        public static float TargetPolynomial(float x) => x * x + 3 * x + 2;
+
     }
 
     public class Population
     {
-        private Genome[] genomes;
-        public int populationSize;
+        public Genome[] Genomes { get; set; } = [];
+        public int PopulationSize => Genomes.Length;
         private int genomeSize;
 
         public Population(int populationSize, int genomeSize)
         {
             Console.WriteLine("Random Population initialization");
-            this.populationSize = populationSize;
             this.genomeSize = genomeSize;
-            InitializePopulation();
+            InitializePopulation(populationSize);
         }
-        public Population(int populationSize, int genomeSize, Genome[] population)
+        public Population(int genomeSize, Genome[] population)
         {
             Console.WriteLine("new Generation initialization");
-            this.populationSize = populationSize;
             this.genomeSize = genomeSize;
-            this.genomes=population;
+            this.Genomes = population;
         }
 
-        private void InitializePopulation()
+        private void InitializePopulation(int populationSize)
         {
             Genome[] genomes = new Genome[populationSize];
 
             for (int i = 0; i < populationSize; i++)
-            {
                 genomes[i] = new Genome(genomeSize); // Initialize each genome with random weights
-            }
-            this.genomes = genomes;
-        }
 
-        public Genome[] GetGenomes()
-        {
-            return this.genomes;
-        }
-        public void setPopulation(Genome[] newPopulation)
-        {
-            this.genomes = newPopulation;
+            this.Genomes = genomes;
         }
     }
 }
