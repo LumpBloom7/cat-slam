@@ -40,8 +40,6 @@ public partial class RobotCharacter : CharacterBody3D
 
     private KalmanFilter? kalmanFilter { get; set; } = null;
 
-    private ParticleFilter particleFilter { get; set; } = null!;
-
     private Node3D ghostNode = null!;
 
     public override void _Ready()

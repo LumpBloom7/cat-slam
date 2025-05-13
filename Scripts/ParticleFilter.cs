@@ -38,13 +38,16 @@ public partial class ParticleFilter : MultiMeshInstance3D
 
     // Added parameters for Augmented MCL
     [Export]
-    public float AlphaSlow { get; set; } = 0.02f; // Decay rate for long-term average
+    public float AlphaSlow { get; set; } = 0.005f; // Decay rate for long-term average
 
     [Export]
-    public float AlphaFast { get; set; } = 0.2f; // Decay rate for short-term average
+    public float AlphaFast { get; set; } = 0.05f; // Decay rate for short-term average
 
     private double wSlow = 0.0; // Long-term average weight
     private double wFast = 0.0; // Short-term average weight
+
+    [Signal]
+    public delegate void GhostStateChangedEventHandler(Godot.Vector3 position, Godot.Vector3 rotation);
 
     public override void _Ready()
     {
@@ -226,8 +229,12 @@ public partial class ParticleFilter : MultiMeshInstance3D
 
         ArrayPool<double>.Shared.Return(cumulativeWeights);
 
-        print();
+        //print();
         updateVisuals();
+        var highestWeightParticle = particles.MaxBy(p => p.Weight);
+        var coord = new Godot.Vector3(){ X = highestWeightParticle.Coordinate.X, Y = 0f, Z = highestWeightParticle.Coordinate.Y};
+        var rotation = new Godot.Vector3(0, highestWeightParticle.Coordinate.Z, 0);
+        EmitSignal(SignalName.GhostStateChanged, coord, rotation);
     }
 
     private int count = 0;
