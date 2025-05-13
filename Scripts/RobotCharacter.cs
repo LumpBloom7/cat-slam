@@ -33,9 +33,8 @@ public partial class RobotCharacter : CharacterBody3D
     public delegate void PositionChangedEventHandler(Vector3 position);
 
     [Signal]
-    public delegate void GhostPositionChangedEventHandler(Vector3 position);
+    public delegate void GhostStateChangedEventHandler(Vector3 position, Vector3 rotation);
 
-    private GridMap breadcrumbMap = null!;
 
     public BeaconDetector BeaconDetector { get; private set; } = null!;
 
@@ -47,7 +46,6 @@ public partial class RobotCharacter : CharacterBody3D
     {
         base._Ready();
         AddChild(BeaconDetector = new BeaconDetector(OmnidirectionalSensorRange));
-        ghostNode = GetParent().GetNode<Node3D>("GhostRobot");
     }
 
     public void InitPosition(Vector2 position)
@@ -216,9 +214,9 @@ public partial class RobotCharacter : CharacterBody3D
         }
 
         Debug.Assert(kalmanFilter is not null);
-        ghostNode.Position = Position with { X = kalmanFilter.Mu[0], Z = -kalmanFilter.Mu[1] };
-        ghostNode.Rotation = new Vector3(0, kalmanFilter.Mu[2].FromMathematicalAngle(), 0);
+        var ghostPosition = Position with { X = kalmanFilter.Mu[0], Z = -kalmanFilter.Mu[1] };
+        var ghostRotation = new Vector3(0, kalmanFilter.Mu[2].FromMathematicalAngle(), 0);
 
-        EmitSignal(SignalName.GhostPositionChanged, ghostNode.Position);
+        EmitSignalGhostStateChanged(ghostPosition, ghostRotation);
     }
 }

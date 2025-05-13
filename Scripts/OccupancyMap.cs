@@ -20,11 +20,6 @@ public partial class OccupancyMap : MultiMeshInstance3D
 
     private int exploredTiles = 0;
 
-    private void connectLidars()
-    {
-        foreach (var lidar in GetParent().GetDescendants<SimulatedLidar>(true))
-            lidar.RayCasted += ProcessRayCast;
-    }
     public override void _Ready()
     {
         base._Ready();
@@ -75,18 +70,6 @@ public partial class OccupancyMap : MultiMeshInstance3D
             }
         }
     }
-
-    public override void _Process(double delta)
-    {
-        base._Process(delta);
-
-        if (lidarsConnected)
-            return;
-
-        connectLidars();
-        lidarsConnected = true;
-    }
-
 
     public IEnumerable<Cell> getIntersectingTiles(Vector3 origin, Vector3 target)
     {
