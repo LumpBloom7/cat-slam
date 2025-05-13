@@ -121,6 +121,7 @@ mesh = SubResource("PlaneMesh_q2s1f")
 skeleton = NodePath("")
 
 [node name="GridMap" type="GridMap" parent="."]
+visible = false
 mesh_library = ExtResource("11_waypw")
 cell_size = Vector3(1, 1, 1)
 script = ExtResource("11_i451r")
@@ -139,6 +140,7 @@ LineColour = Color(0, 1, 0, 1)
 
 [node name="KalmanRepresentation" type="Node3D" parent="."]
 script = ExtResource("15_i451r")
+CellSize = Vector2(0.1, 0.1)
 
 [connection signal="GhostStateChanged" from="Robot" to="KalmanRepresentation" method="UpdateGhostPosition"]
 [connection signal="LeftMotorValueChanged" from="Robot" to="Robot/MotorLabels/Label3D" method="OnSignalReceived"]

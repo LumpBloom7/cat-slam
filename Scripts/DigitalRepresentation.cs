@@ -22,7 +22,8 @@ public partial class DigitalRepresentation : Node3D
         AddChild(occupancyMap = new OccupancyMap()
         {
             MapSize = MapSize,
-            CellSize = CellSize
+            CellSize = CellSize,
+            CellColour = Colour
         });
         AddChild(path = new RobotPath()
         {
@@ -52,6 +53,7 @@ public partial class DigitalRepresentation : Node3D
         {
             AddChild(new MeshInstance3D
             {
+                CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
                 Mesh = new CylinderMesh
                 {
                     TopRadius = 0.15f,
@@ -69,6 +71,7 @@ public partial class DigitalRepresentation : Node3D
             AddChild(new MeshInstance3D
             {
                 Position = new Vector3(0, 0.05f, -0.15f),
+                CastShadow = GeometryInstance3D.ShadowCastingSetting.Off,
                 Mesh = new BoxMesh
                 {
                     Size = new(0.05f, 0.05f, 0.05f),

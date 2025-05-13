@@ -11,6 +11,9 @@ public partial class OccupancyMap : MultiMeshInstance3D
     [Export]
     public Vector2 CellSize;
 
+    [Export]
+    public Color CellColour { get; set; } = Color.Color8(255, 0, 255);
+
 
     private Cell[,] cellContents = null!;
 
@@ -66,7 +69,7 @@ public partial class OccupancyMap : MultiMeshInstance3D
                 meshTransform = meshTransform.Scaled(new Vector3(CellSize.X, 0.5f, CellSize.Y)).TranslatedLocal(new Vector3(x, 0.25f, y));
 
                 Multimesh.SetInstanceTransform(cell.Index, meshTransform);
-                Multimesh.SetInstanceColor(cell.Index, Color.Color8(128, 0, 128));
+                Multimesh.SetInstanceColor(cell.Index, CellColour * new Color(0.5f, 0.5f, 0.5f, 1));
             }
         }
     }
@@ -131,7 +134,9 @@ public partial class OccupancyMap : MultiMeshInstance3D
             newTransform = newTransform.Scaled(new Vector3(CellSize.X, cellContent.OccupiedLikelihood, CellSize.Y)).TranslatedLocal(new Vector3(cell.X, cellContent.OccupiedLikelihood * 0.5f, cell.Y)).Translated(new Vector3(0, -0.1f, 0));
 
             Multimesh.SetInstanceTransform(cellContent.Index, newTransform);
-            Multimesh.SetInstanceColor(cellContent.Index, new Color(cellContent.OccupiedLikelihood, 0, cellContent.OccupiedLikelihood));
+
+            var colour = CellColour * new Color(cellContent.OccupiedLikelihood, cellContent.OccupiedLikelihood, cellContent.OccupiedLikelihood,1);
+            Multimesh.SetInstanceColor(cellContent.Index, colour);
         }
     }
 
