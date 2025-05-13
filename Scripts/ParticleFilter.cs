@@ -37,7 +37,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
 
     // Added parameters for Augmented MCL
     [Export]
-    public float AlphaSlow { get; set; } = 0.001f; // Decay rate for long-term average
+    public float AlphaSlow { get; set; } = 0.01f; // Decay rate for long-term average
 
     [Export]
     public float AlphaFast { get; set; } = 0.1f; // Decay rate for short-term average
@@ -166,7 +166,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
                 // Add random sample
                 float y = ((float)random.NextDouble() * Height) - offset.Y;
                 float x = ((float)random.NextDouble() * Width) - offset.X;
-                float theta = (float)random.NextDouble();
+                float theta = (float)random.NextDouble()*(2 * MathF.PI);
                 Vector3 newVec = new Vector3(x, y, theta);
                 // example how to do motion vector
                 Particle newParticle = new Particle()
@@ -333,5 +333,12 @@ public partial class ParticleFilter : MultiMeshInstance3D
         if (diff > MathF.PI) diff -= 2 * MathF.PI;
         if (diff < -MathF.PI) diff += 2 * MathF.PI;
         return diff;
+    }
+    private float NormalizeAngle(float angle)
+    {
+        // Normalize to [0, 2π)
+        angle = angle % (2 * MathF.PI);
+        if (angle < 0) angle += 2 * MathF.PI;
+        return angle;
     }
 }
