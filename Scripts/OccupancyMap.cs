@@ -18,6 +18,8 @@ public partial class OccupancyMap : MultiMeshInstance3D
 
     private bool lidarsConnected = false;
 
+    private int exploredTiles = 0;
+
     private void connectLidars()
     {
         foreach (var lidar in GetParent().GetDescendants<SimulatedLidar>(true))
@@ -135,6 +137,12 @@ public partial class OccupancyMap : MultiMeshInstance3D
             float prob = ((isFilled ? 1 : 0) - 0.5f) * (1 - Math.Clamp(dist, 0, 5) / 5);
 
             cellContent.OccupiedLikelihood = (float)Math.Clamp(cellContent.OccupiedLikelihood + prob, 0, 1);
+            if (!cellContent.explored)
+            {
+                cellContent.explored = true;
+                ++exploredTiles;
+                GD.Print(exploredTiles);
+            }
 
             var newTransform = Transform3D.Identity;
             newTransform = newTransform.Scaled(new Vector3(CellSize.X, cellContent.OccupiedLikelihood, CellSize.Y)).TranslatedLocal(new Vector3(cell.X, cellContent.OccupiedLikelihood * 0.5f, cell.Y)).Translated(new Vector3(0, -0.1f, 0));
@@ -152,6 +160,8 @@ public partial class OccupancyMap : MultiMeshInstance3D
         public int Index { get; init; }
 
         public float OccupiedLikelihood { get; set; }
+
+        public bool explored { get; set; }
     }
 }
 
