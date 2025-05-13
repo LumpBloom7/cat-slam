@@ -143,13 +143,13 @@ mesh = SubResource("PlaneMesh_q2s1f")
 skeleton = NodePath("")
 
 [node name="GridMap" type="GridMap" parent="."]
-visible = false
 mesh_library = ExtResource("11_waypw")
 cell_size = Vector3(1, 1, 1)
 script = ExtResource("11_i451r")
 metadata/_editor_floor_ = Vector3(0, -2, 0)
 
 [node name="ProbMap" type="MultiMeshInstance3D" parent="."]
+visible = false
 script = ExtResource("14_i451r")
 MapSize = Vector2(30, 30)
 CellSize = Vector2(0.1, 0.1)
