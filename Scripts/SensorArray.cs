@@ -12,6 +12,9 @@ public partial class SensorArray : Node3D
     [Export]
     public float Noise { get; set; } = 1;
 
+    [Signal]
+    public delegate void OnRayCastedEventHandler(float distance, float angle, bool rayHit);
+
     public override void _Ready()
     {
         float rotStep = (2 * MathF.PI) / NumberOfSensors;
@@ -22,7 +25,8 @@ public partial class SensorArray : Node3D
                 Rotation = new Vector3(0, rotStep * i, 0),
                 PulseInterval = 0.2,
                 NoiseVariance = Noise,
-                TargetPosition = new Vector3(0, 0, -SensorRange)
+                TargetPosition = new Vector3(0, 0, -SensorRange),
+                OnRayCast = EmitSignalOnRayCasted
             });
         }
     }

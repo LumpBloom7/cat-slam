@@ -13,7 +13,7 @@ public partial class RobotPath : MultiMeshInstance3D
     public Color LineColour { get; set; } = Color.Color8(255, 0, 0, 255);
 
     [Export]
-    public bool dotted { get; set; } = false;
+    public bool Dotted { get; set; } = false;
 
     public override void _Ready()
     {
@@ -63,7 +63,7 @@ public partial class RobotPath : MultiMeshInstance3D
         if (lastPosition.Value.IsEqualApprox(position))
             return;
 
-        if (dotted)
+        if (Dotted)
         {
             ++count;
             if (count >= 15)
