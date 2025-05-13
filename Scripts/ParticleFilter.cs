@@ -25,10 +25,12 @@ public partial class ParticleFilter : MultiMeshInstance3D
     private Vector2 offset { get; set; }
 
     [Export]
-    public int ParticleCount { get; set; } = 1000;
+    public int ParticleCount { get; set; } = 100;
 
     [Export]
     public float Sigma { get; set; } = 2f;
+
+    public float SigmaTheta{ get; set; } = 0.01f;
 
     private List<Particle> particles { get; } = [];
     private List<Particle> candidates { get; } = [];
@@ -133,14 +135,9 @@ public partial class ParticleFilter : MultiMeshInstance3D
         {
             for (int i = 0; i < candidates.Count; i++)
             {
-                double normalized = candidates[i].Weight / totalWeight;
-                Particle newParticle = new Particle()
-                {
-                    Coordinate = candidates[i].Coordinate,
-                    Weight = normalized
-                };
-                candidates[i] = newParticle;
-                avgWeight += normalized;
+                candidates[i] = candidates[i] with { Weight = candidates[i].Weight / totalWeight };
+                avgWeight += candidates[i].Weight;
+                // avgWeight += candidates[i].Weight;
             }
             avgWeight /= candidates.Count;
         }
@@ -183,6 +180,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
             {
                 // Regular resampling
                 double u = random.NextDouble();
+                // double u = random.NextDouble() * cumulativeWeights.Max();
                 int index = 0;
 
                 while (index < candidates.Count - 1 && u > cumulativeWeights[index])
@@ -237,10 +235,38 @@ public partial class ParticleFilter : MultiMeshInstance3D
         }
     }
 
+    // private double UpdateWeight(IEnumerable<(Vector2 Position, float Distance)> real, Vector3 particle)
+    // {
+    //     double logWeight = 0.0;
+    //     Vector2 particlePos = new Vector2(particle.X, particle.Y);
+    //     foreach (var observation in real)
+    //     {
+    //         // Calculate expected observation from this particle's position
+    //         double realDistance = observation.Distance;
+    //         var realCords = observation.Position;
+
+    //         float partDist = (realCords - particlePos).Length();
+
+    //         // Calculate the probability of this observation
+
+    //         double probRange = GaussianProbability(observation.Distance - partDist, Sigma);
+    //         //Console.WriteLine(probRange);
+
+    //         // Combine probabilities
+
+    //         if (probRange > 0) // Avoid taking log of zero
+    //             logWeight += Math.Log(probRange);
+    //         else
+    //             logWeight += -20.0;
+    //     }
+    //     return Math.Exp(logWeight);
+    // }
+
     private double UpdateWeight(IEnumerable<(Vector2 Position, float Distance)> real, Vector3 particle)
     {
         double logWeight = 0.0;
         Vector2 particlePos = new Vector2(particle.X, particle.Y);
+        float particleTheta = particle.Z;
         foreach (var observation in real)
         {
             // Calculate expected observation from this particle's position
@@ -248,22 +274,22 @@ public partial class ParticleFilter : MultiMeshInstance3D
             var realCords = observation.Position;
 
             float partDist = (realCords - particlePos).Length();
-
-            // Calculate the probability of this observation
-
             double probRange = GaussianProbability(observation.Distance - partDist, Sigma);
-            //Console.WriteLine(probRange);
 
+            // Bearing calculation 
+            float expectedBearing = MathF.Atan2(observation.Position.Y - particlePos.Y, observation.Position.X - particlePos.X);
+            // Compare with particle orientation
+            float bearingDiff = AngleDifference(expectedBearing, particleTheta);
+            double probBearing = GaussianProbability(bearingDiff, SigmaTheta);
             // Combine probabilities
 
             if (probRange > 0) // Avoid taking log of zero
-                logWeight += Math.Log(probRange);
+                logWeight += Math.Log(probRange) + Math.Log(probBearing);
             else
                 logWeight += -20.0;
         }
         return Math.Exp(logWeight);
     }
-
     private void updateVisuals()
     {
         Multimesh.VisibleInstanceCount = particles.Count;
@@ -277,7 +303,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
             var meshTransform = Transform3D.Identity;
             bool isBest = (particles[i] == bestCandidateParticle);
 
-            Godot.Vector3 Scale = isBest ? Godot.Vector3.One * 2 : Godot.Vector3.One;
+            Godot.Vector3 Scale = isBest ? Godot.Vector3.One : Godot.Vector3.One;
 
             meshTransform = meshTransform.Scaled(Scale).TranslatedLocal(new Godot.Vector3(particles[i].Coordinate.X, 0, particles[i].Coordinate.Y));
 
@@ -294,10 +320,17 @@ public partial class ParticleFilter : MultiMeshInstance3D
     private static double NextGaussian()
     {
         Random r = Random.Shared;
-        double u1 = 1.0 - r.NextDouble(); // Uniform(0,1) random doubles
+        double u1 = 1.0 - r.NextDouble();
         double u2 = 1.0 - r.NextDouble();
         return Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2);
     }
 
-
+    private float AngleDifference(float angle1, float angle2)
+    {
+        // Returns smallest angle difference in range [-π, π]
+        float diff = (angle1 - angle2) % (2 * MathF.PI);
+        if (diff > MathF.PI) diff -= 2 * MathF.PI;
+        if (diff < -MathF.PI) diff += 2 * MathF.PI;
+        return diff;
+    }
 }
