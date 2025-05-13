@@ -1,5 +1,7 @@
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
+using System.Linq;
 using MyProject.NeuralNetwork;
 using TorchSharp;
 
@@ -18,10 +20,10 @@ namespace MyProject.Algorithms
         {
             this.mutationRate = mutationRate;
             this.genomeSize = genomeSize;
-            this.k = torunamentSeelectionSize;
+            k = torunamentSeelectionSize;
             this.parentSelectionPersentage = parentSelectionPersentage;
-            this.population = new Population(populationSize, genomeSize);
-            var populationEvaluate = this.population.Genomes;
+            population = new Population(populationSize, genomeSize);
+            var populationEvaluate = population.Genomes;
             for (int i = 0; i < populationEvaluate.Length; i++)
             {
                 //populationEvaluate[i].evaluateFitness();
@@ -31,30 +33,32 @@ namespace MyProject.Algorithms
             }
         }
 
-        private float evaluate(Genome individual){ // accepts an individual (We will simulate his game)
+        private float evaluate(Genome individual)
+        { // accepts an individual (We will simulate his game)
             //Here we get sensor inputs and motor velocities for input + restart the enviroment
-            float[] sensorInput = [3.0f,4.0f,1.0f,3.0f];
-            float[] motorVelocity = [0.2f,1.4f];
-            //Define the NN 
-            Model model = new Model(sensorInput.Length,motorVelocity.Length);
+            float[] sensorInput = [3.0f, 4.0f, 1.0f, 3.0f];
+            float[] motorVelocity = [0.2f, 1.4f];
+            //Define the NN
+            Model model = new Model(sensorInput.Length, motorVelocity.Length);
             model.setWeights(individual.weights); // assign the weights to out NN
             int step = 0;
-            int award=0;
+            int award = 0;
 
-            while(step<1000){
-            // here we get our observations but i am unsure how to retrieve them from godot dynamically so i am using place holder
+            while (step < 1000)
+            {
+                // here we get our observations but i am unsure how to retrieve them from godot dynamically so i am using place holder
                 var seq = model.seq;
                 var x = torch.tensor(sensorInput); // forgot we need to include sensor Input+ motor inputs
-                var y = torch.tensor(new float[]{2f,3f});
+                var y = torch.tensor(new float[] { 2f, 3f });
                 //perform step
-                using var action  = seq.forward(x);
+                using var action = seq.forward(x);
                 //Now that we have an action we perform a move in out enviroment from which we get award (like hitting wall -200 or smth, collecting a cat +1000)
                 // reward, observation = envitoment.step()
                 //award += reward
-                step = step+1;
+                step = step + 1;
                 //sensorInput = obs2 set to new sensor readings
             }
-            return 1f; // placeholder 
+            return 1f; // placeholder
         }
         private Genome tournamentSelection()
         {
@@ -113,7 +117,7 @@ namespace MyProject.Algorithms
             {
                 Console.WriteLine("Mutation performed");
                 int index = random.Next(childWeights.Length);
-                childWeights[index] += (float)(random.NextDouble() * 2 - 1); //Random between -1 and 1 
+                childWeights[index] += (float)(random.NextDouble() * 2 - 1); //Random between -1 and 1
             }
             return childWeights;
         }
@@ -124,7 +128,7 @@ namespace MyProject.Algorithms
             Console.WriteLine("Running Genetic Algorithm..."); //GA process: selection, crossover, mutation, etc.
             //Console.WriteLine("");
 
-            //select parents 
+            //select parents
             var parents = selectParents();
             //Console.WriteLine("Parent length: " + parents.Length);
 
@@ -151,12 +155,12 @@ namespace MyProject.Algorithms
 
                 //Create new genome
                 Genome childGenome = new Genome(childWeights);
-                childGenome.FitnessScore=evaluate(childGenome);
+                childGenome.FitnessScore = evaluate(childGenome);
                 //childGenome.evaluateFitness();
                 newPopulation.Add(childGenome);
             }
 
-            //Store best fit 
+            //Store best fit
             float bestFitness = 10000000;
             for (int i = 0; i < newPopulation.Count; i++)
             {
@@ -189,7 +193,7 @@ namespace MyProject.Algorithms
             }
         }
 
-        public Genome(float[] weights) //Initialize with predefined weights 
+        public Genome(float[] weights) //Initialize with predefined weights
         {
             this.weights = weights;
         }
@@ -237,7 +241,7 @@ namespace MyProject.Algorithms
         {
             Console.WriteLine("new Generation initialization");
             this.genomeSize = genomeSize;
-            this.Genomes = population;
+            Genomes = population;
         }
 
         private void InitializePopulation(int populationSize)
@@ -247,7 +251,7 @@ namespace MyProject.Algorithms
             for (int i = 0; i < populationSize; i++)
                 genomes[i] = new Genome(genomeSize); // Initialize each genome with random weights
 
-            this.Genomes = genomes;
+            Genomes = genomes;
         }
     }
 }

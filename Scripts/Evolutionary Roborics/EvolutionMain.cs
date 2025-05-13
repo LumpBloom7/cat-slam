@@ -1,29 +1,30 @@
 using MyProject.Algorithms;
 using MyProject.NeuralNetwork;
 namespace MyProject;
+
 using System;
 
-    class Program
+class Program
+{
+    static void Main(string[] args)
     {
-        static void Main(string[] args)
-        {   
 
-            float[] sensorInput = [3.0f,4.0f,1.0f,3.0f];
-            float[] motorVelocity = [0.2f,1.4f];
+        float[] sensorInput = [3.0f, 4.0f, 1.0f, 3.0f];
+        float[] motorVelocity = [0.2f, 1.4f];
 
-            //Initialize Neural Network 
-            Model model = new Model(sensorInput.Length,motorVelocity.Length);
-            
-            // Network model = new Network;
-            // model.run();
+        //Initialize Neural Network
+        Model model = new Model(sensorInput.Length, motorVelocity.Length);
 
-            int k = 5;
-            int populationSize= 100; 
-            Console.Write("weights" +model.countNeurons());
-            //int populationSize = 10;
-            int numOfWeights = model.countNeurons(); // num of weights of NN determines the size of our Genomes
-            float parentSelectionPersentage = 0.20f;
-            float mutationRate = 0.02f;
+        // Network model = new Network;
+        // model.run();
+
+        int k = 5;
+        int populationSize = 100;
+        Console.Write("weights" + model.countNeurons());
+        //int populationSize = 10;
+        int numOfWeights = model.countNeurons(); // num of weights of NN determines the size of our Genomes
+        float parentSelectionPersentage = 0.20f;
+        float mutationRate = 0.02f;
         //     GeneticAlgorithm ga = new GeneticAlgorithm(populationSize, numOfWeights, k, parentSelectionPersentage, mutationRate);
 
         //     //Get the population and print genomes
@@ -50,5 +51,5 @@ using System;
         //         count++;
         //     }
 
-         }
     }
+}
