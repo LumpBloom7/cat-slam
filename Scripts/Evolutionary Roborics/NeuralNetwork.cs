@@ -1,16 +1,13 @@
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.Marshalling;
 using TorchSharp;
 using TorchSharp.Modules;
 using static TorchSharp.torch.nn;
 
 
-using Matrix = MathNet.Numerics.LinearAlgebra.Matrix<float>;
-using Vector = MathNet.Numerics.LinearAlgebra.Vector<float>;
 public class Model2
 {
     private Sequential seq;
@@ -98,10 +95,9 @@ public class Model2
 
 public class Model
 {
-    private Matrix[] linearLayers;
+    private List<float[,]> linearLayers;
 
-    private Vector inputBuffer;
-    private float[] outputBuffer;
+    private float[][] buffers;
 
     public int TotalWeights { get; private set; }
 
@@ -109,70 +105,78 @@ public class Model
     {
         MathNet.Numerics.Control.MaxDegreeOfParallelism = 8;
         linearLayers = [
-            Matrix.Build.Dense(inputDimension, 12),
-            Matrix.Build.Dense(12, 8),
-            Matrix.Build.Dense(8, outputDimension)];
+            new float[inputDimension, 12],
+            new float[12, 8],
+            new float[8, 2] ];
 
-        inputBuffer = Vector.Build.Dense(inputDimension);
-        outputBuffer = new float[outputDimension];
+        buffers = [
+            new float[12],
+            new float[8],
+            new float[2]
+        ];
 
         TotalWeights = 0;
 
-        foreach (var ll in linearLayers)
-            TotalWeights += ll.ColumnCount * ll.RowCount;
+        foreach (float[,] ll in linearLayers)
+            TotalWeights += ll.Length;
     }
 
-    public float[] Forward(float[] X) => Forward(X.AsSpan());
-
-    public float[] Forward(ReadOnlySpan<float> X)
+    public float[] Forward(float[] X)
     {
-        for (int i = 0; i < inputBuffer.Count; ++i)
-            inputBuffer[i] = X[i];
+        MatMultInto(X, linearLayers[0], buffers[0]);
+        ReluInplace(buffers[0]);
+        MatMultInto(buffers[0], linearLayers[1], buffers[1]);
+        ReluInplace(buffers[1]);
+        MatMultInto(buffers[1], linearLayers[2], buffers[2]);
+        TanHInpalace(buffers[2]);
 
-        var ll = linearLayers;
-
-        var output = TanHInpalace(ReluInplace(ReluInplace(inputBuffer * ll[0]) * ll[1]) * ll[2]);
-
-        for (int i = 0; i < outputBuffer.Length; ++i)
-            outputBuffer[i] = output[i];
-
-        return outputBuffer;
+        return buffers[2];
     }
 
-    public static Vector ReluInplace(Vector vec)
+    public static void MatMultInto(ReadOnlySpan<float> input, float[,] right, Span<float> output)
     {
-        for (int i = 0; i < vec.Count; ++i)
+        output.Clear();
+
+        for (int r = 0; r < input.Length; ++r)
+        {
+            if (input[r] == 0)
+                continue;
+
+            for (int c = 0; c < output.Length; ++c)
+                output[c] += input[r] * right[r, c];
+        }
+    }
+
+    public static void ReluInplace(float[] vec)
+    {
+        for (int i = 0; i < vec.Length; ++i)
             vec[i] = MathF.Max(0, vec[i]);
-
-        return vec;
     }
 
-    public static Vector TanHInpalace(Vector vec)
+    public static void TanHInpalace(float[] vec)
     {
-        for (int i = 0; i < vec.Count; ++i)
+        for (int i = 0; i < vec.Length; ++i)
             vec[i] = MathF.Tanh(vec[i]);
-
-        return vec;
     }
 
     public void setWeights(ReadOnlySpan<float> externalWeights)
     {
         int index = 0;
 
-        for (int i = 0; i < linearLayers.Length; ++i)
+        for (int i = 0; i < linearLayers.Count; ++i)
         {
-            var layer = linearLayers[i];
-            int numWeights = layer.ColumnCount * layer.RowCount;
-
+            float[,] layer = linearLayers[i];
+            int numWeights = layer.Length;
+            int columns = layer.GetLength(1);
             for (int j = 0; j < numWeights; ++j)
             {
-                int row = j / layer.ColumnCount;
-                int column = j - row * layer.ColumnCount;
+                int row = j / columns;
+                int column = j - row * columns;
+
                 layer[row, column] = externalWeights[index + j];
             }
-
             index += numWeights;
         }
     }
-
 }
+
