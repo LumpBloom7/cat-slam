@@ -107,6 +107,7 @@ public class Model
 
     public Model(int inputDimension, int outputDimension)
     {
+        MathNet.Numerics.Control.MaxDegreeOfParallelism = 8;
         linearLayers = [
             Matrix.Build.Dense(inputDimension, 12),
             Matrix.Build.Dense(12, 8),
