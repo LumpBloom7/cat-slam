@@ -51,7 +51,7 @@ public class GeneticAlgorithm
         //Define the NN
         model.setWeights(individual.weights); // assign the weights to out NN
 
-        for (int i = 0; i < 10; ++i)
+        for (int i = 0; i < 50; ++i)
         {
             //perform step
             float[] data = model.Forward(neuralNetworkInputArray);
@@ -90,7 +90,7 @@ public class GeneticAlgorithm
 
         population.Shuffle();
 
-        return population.Take(k).MinBy(g => g.FitnessScore)!;
+        return population.Take(k).MaxBy(g => g.FitnessScore)!;
     }
     private HashSet<Genome> selectedParents = [];
     private HashSet<Genome> selectParents()
@@ -174,6 +174,8 @@ public class GeneticAlgorithm
             //Create new genome
             Genome childGenome = new Genome(childWeights);
             childGenome.FitnessScore = evaluate(childGenome, ctx);
+
+            Console.WriteLine(childGenome.FitnessScore);
             //childGenome.evaluateFitness();
             population.Add(childGenome);
         }
