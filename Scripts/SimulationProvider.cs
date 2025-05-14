@@ -51,6 +51,27 @@ public partial class SimulationProvider : Node
             numSensor = sensorArr.NumberOfSensors;
             sensorRange = sensorArr.SensorRange;
         }
+        public SimulationContext(SimulationContext other)
+        {
+            occupancyMap = other.occupancyMap;
+            originalPosition = Position = other.originalPosition;
+            originalRotation = Rotation = other.originalRotation;
+            originalLeftVel = LeftVel = other.originalLeftVel;
+            originalRightVel = RightVel = other.originalRightVel;
+
+            AccelerationPerSecond = other.AccelerationPerSecond;
+            DeccelerationPerSecond = other.DeccelerationPerSecond;
+            MaxSpeed = other.MaxSpeed;
+            Radius = other.Radius;
+
+            originalDistances = other.originalDistances;
+            SensorValues = [.. originalDistances];
+
+            numSensor = originalDistances.Length;
+            sensorRange = other.sensorRange;
+        }
+
+        public SimulationContext Copy() => new(this);
 
         private readonly int numSensor;
 
@@ -141,29 +162,37 @@ public partial class SimulationProvider : Node
 
         private int beamReward(Vector3 origin, Vector3 target, int index)
         {
-            const float PRECISION = 0.01f;
+            const float PRECISION = 0.05f;
 
             Vector2 step = new Vector2(target.X - origin.X, target.Z - origin.Z) * PRECISION;
             Vector2 halfMapSize = occupancyMap.MapSize / 2;
 
             Vector2 current = new Vector2(origin.X, origin.Z) + halfMapSize;
 
-            Cell cell = new Cell { X = -5000, Y = -5000 };
+            CellLite cell = new CellLite { X = -5000, Y = -5000 };
             int rewardCount = 0;
 
             for (float i = 0; i <= 1; i += PRECISION)
             {
-                Cell nextCell = new()
+                CellLite nextCell = new()
                 {
                     X = (int)Math.Round(current.X / occupancyMap.CellSize.X),
                     Y = (int)Math.Round(current.Y / occupancyMap.CellSize.Y)
                 };
 
+                if (nextCell.Y < 0 || nextCell.Y >= occupancyMap.CellContents.GetLength(0))
+                    break;
+
+                if (nextCell.X < 0 || nextCell.X >= occupancyMap.CellContents.GetLength(1))
+                    break;
+
+                ref var actualCell = ref occupancyMap.CellContents[nextCell.Y, nextCell.X];
+
                 // Let's not give more info
-                if (nextCell.OccupiedLikelihood > 0.25f)
+                if (actualCell.OccupiedLikelihood > 0.5f)
                 {
                     if ((step * i).Length() <= Radius * 1.5f)
-                        rewardCount -= 150;
+                        rewardCount -= 50000;
 
                     break;
                 }
@@ -172,7 +201,7 @@ public partial class SimulationProvider : Node
 
                 if (nextCell != cell)
                 {
-                    if (!nextCell.explored)
+                    if (!actualCell.explored)
                         rewardCount += 1;
                 }
 
@@ -183,6 +212,8 @@ public partial class SimulationProvider : Node
 
             return rewardCount;
         }
+
+        private readonly record struct CellLite(int X, int Y);
 
     }
 

@@ -14,7 +14,7 @@ public partial class OccupancyMap : MultiMeshInstance3D
     [Export]
     public Color CellColour { get; set; } = Color.Color8(255, 0, 255);
 
-    public Cell[,] CellContents { get; private set; } =  null!;
+    public Cell[,] CellContents { get; private set; } = null!;
 
     private StandardMaterial3D material = null!;
 
@@ -126,7 +126,6 @@ public partial class OccupancyMap : MultiMeshInstance3D
             {
                 cellContent.explored = true;
                 ++exploredTiles;
-                GD.Print(exploredTiles);
             }
 
             var newTransform = Transform3D.Identity;
@@ -134,12 +133,14 @@ public partial class OccupancyMap : MultiMeshInstance3D
 
             Multimesh.SetInstanceTransform(cellContent.Index, newTransform);
 
-            var colour = CellColour * new Color(cellContent.OccupiedLikelihood, cellContent.OccupiedLikelihood, cellContent.OccupiedLikelihood,1);
+            var colour = CellColour * new Color(cellContent.OccupiedLikelihood, cellContent.OccupiedLikelihood, cellContent.OccupiedLikelihood, 1);
             Multimesh.SetInstanceColor(cellContent.Index, colour);
         }
     }
 
-    public record struct Cell
+
+
+    public record struct Cell : IEquatable<Cell>
     {
         public int X { get; init; }
         public int Y { get; init; }

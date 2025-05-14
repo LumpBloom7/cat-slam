@@ -41,14 +41,11 @@ public class GeneticAlgorithm
 
         //Define the NN
         model.setWeights(individual.weights); // assign the weights to out NN
-        using var d0 = torch.NewDisposeScope();
 
         for (int i = 0; i < 10; ++i)
         {
             //perform step
-            var action = model.Forward(neuralNetworkInputArray);
-
-            var data = action.data<float>();
+            float[] data = model.Forward(neuralNetworkInputArray);
 
             ctx.Update((int)Math.Round(data[0]), (int)Math.Round(data[1])); //update enviroment
 
@@ -56,7 +53,6 @@ public class GeneticAlgorithm
             ctx.SensorValues.CopyTo(neuralNetworkInputArray, 0);
             neuralNetworkInputArray[^2] = ctx.LeftVel;
             neuralNetworkInputArray[^1] = ctx.RightVel;
-            d0.DisposeEverything();
         }
 
 
@@ -65,7 +61,6 @@ public class GeneticAlgorithm
     public (int, int) evaluateToGetAction(Genome individual, SimulationProvider.SimulationContext ctx)
     {
         ctx.Reset();
-        using var d0 = torch.NewDisposeScope();
 
         //Here we get sensor inputs and motor velocities for input
 
@@ -74,16 +69,14 @@ public class GeneticAlgorithm
         neuralNetworkInputArray[^1] = ctx.RightVel;
 
         model.setWeights(individual.weights); // assign the weights to out NN
-        var y = model.Forward(neuralNetworkInputArray);
-        int leftMotorReading = (int)Math.Round(y.data<float>()[0]);
-        int rightMotorReading = (int)Math.Round(y.data<float>()[1]);
+        float[] y = model.Forward(neuralNetworkInputArray);
+        int leftMotorReading = (int)Math.Round(y[0]);
+        int rightMotorReading = (int)Math.Round(y[1]);
         return (leftMotorReading, rightMotorReading); // placeholder
     }
 
     private Genome tournamentSelection()
     {
-        ///Console.WriteLine("--------------------------");
-        //Console.WriteLine("Tournament Selection");
         Debug.Assert(population.Genomes.Length > 0);
 
         Random.Shared.Shuffle(population.Genomes);
@@ -108,7 +101,6 @@ public class GeneticAlgorithm
 
     public float[] singlePointCrossover(float[] parent1, float[] parent2)
     {
-        //Console.WriteLine("single crossover");
         int length = parent1.Length;
         Random rand = Random.Shared;
         int crossoverPoint = rand.Next(1, length); //not 0 or length
@@ -135,19 +127,14 @@ public class GeneticAlgorithm
         //Console.Write("in mutation");
         if (random.NextDouble() < mutationRate)
         {
-            Console.WriteLine("Mutation performed");
             int index = random.Next(childWeights.Length);
             childWeights[index] += (float)(random.NextDouble() * 2 - 1); //Random between -1 and 1
         }
         return childWeights;
     }
 
-
     public void Run(SimulationProvider.SimulationContext ctx)
     {
-        Console.WriteLine("Running Genetic Algorithm..."); //GA process: selection, crossover, mutation, etc.
-                                                           //Console.WriteLine("");
-
         //select parents
         var parents = selectParents();
         //Console.WriteLine("Parent length: " + parents.Length);
@@ -217,13 +204,11 @@ public class Population
 
     public Population(int populationSize, int genomeSize)
     {
-        Console.WriteLine("Random Population initialization");
         this.genomeSize = genomeSize;
         InitializePopulation(populationSize);
     }
     public Population(int genomeSize, Genome[] population)
     {
-        Console.WriteLine("new Generation initialization");
         this.genomeSize = genomeSize;
         Genomes = population;
     }
@@ -238,4 +223,3 @@ public class Population
         Genomes = genomes;
     }
 }
-
