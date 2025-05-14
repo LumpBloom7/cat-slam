@@ -12,13 +12,6 @@ public partial class GridMapGenerator : GridMap
         WaveFunctionCollapse wave = new WaveFunctionCollapse(3, 3);
         var bitmap = wave.Generate(); //z,x
         GenerateMap(bitmap);
-        var terrainMinimap = GetParent().GetNode("HUD").GetNode<Minimap>("TerrainMinimap");
-
-        if (terrainMinimap is null)
-            return;
-
-        terrainMinimap.OnMazeGenerated(bitmap);
-
         GetNode("/root").GetChild(0).CallDeferred(Node.MethodName.AddChild, BeaconStorageNode);
     }
 
