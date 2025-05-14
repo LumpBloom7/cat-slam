@@ -21,7 +21,7 @@ public class GeneticAlgorithm
         this.mutationRate = mutationRate;
 
         model = new Model(numberOfInputs, 2);
-        genomeSize = model.countNeurons();
+        genomeSize = model.TotalWeights;
         k = tournamentSelectionSize;
         this.parentSelectionPercentage = parentSelectionPercentage;
 
@@ -41,18 +41,14 @@ public class GeneticAlgorithm
 
         //Define the NN
         model.setWeights(individual.weights); // assign the weights to out NN
+        using var d0 = torch.NewDisposeScope();
 
         for (int i = 0; i < 10; ++i)
         {
-            using var d0 = torch.NewDisposeScope();
-
-            //here we get our observations but i am unsure how to retrieve them from godot dynamically so i am using place holder
-            var seq = model.seq;
-            using var eval = torch.tensor(neuralNetworkInputArray);
             //perform step
-            using var action = seq.forward(eval);
+            var action = model.Forward(neuralNetworkInputArray);
 
-            var data = eval.data<float>();
+            var data = action.data<float>();
 
             ctx.Update((int)Math.Round(data[0]), (int)Math.Round(data[1])); //update enviroment
 
@@ -60,6 +56,7 @@ public class GeneticAlgorithm
             ctx.SensorValues.CopyTo(neuralNetworkInputArray, 0);
             neuralNetworkInputArray[^2] = ctx.LeftVel;
             neuralNetworkInputArray[^1] = ctx.RightVel;
+            d0.DisposeEverything();
         }
 
 
@@ -77,12 +74,9 @@ public class GeneticAlgorithm
         neuralNetworkInputArray[^1] = ctx.RightVel;
 
         model.setWeights(individual.weights); // assign the weights to out NN
-        var seq = model.seq;
-        using var x = torch.tensor(neuralNetworkInputArray); // forgot we need to include sensor Input+ motor inputs
-        using var action = seq.forward(x);
-
-        int leftMotorReading = (int)Math.Round(x.data<float>()[0]);
-        int rightMotorReading = (int)Math.Round(x.data<float>()[1]);
+        var y = model.Forward(neuralNetworkInputArray);
+        int leftMotorReading = (int)Math.Round(y.data<float>()[0]);
+        int rightMotorReading = (int)Math.Round(y.data<float>()[1]);
         return (leftMotorReading, rightMotorReading); // placeholder
     }
 
