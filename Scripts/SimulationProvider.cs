@@ -101,7 +101,7 @@ public partial class SimulationProvider : Node
 
         public void Update(int leftInput, int rightInput)
         {
-            const float STEPSIZE = 0.016f;
+            const float STEPSIZE = 0.2f;
             // Compute acceleration amounts
             float leftAcc = 0;
             float rightAcc = 0;
@@ -145,7 +145,15 @@ public partial class SimulationProvider : Node
                 float angleDiff = angleStep * i;
                 var target = Position + line.Rotated(new(0, 1, 0), angleDiff + Rotation);
 
-                rewardSum += beamReward(Position, target, i);
+                int r = beamReward(Position, target, i);
+
+                if (r < 0)
+                {
+                    rewardSum = -10000000;
+                    break;
+                }
+
+                rewardSum += r;
             }
 
             return rewardSum;
@@ -192,8 +200,9 @@ public partial class SimulationProvider : Node
                 if (actualCell.OccupiedLikelihood > 0.5f)
                 {
                     if ((step * i).Length() <= Radius * 1.5f)
-                        rewardCount -= 50000;
-
+                    {
+                        rewardCount = -50000;
+                    }
                     break;
                 }
 
