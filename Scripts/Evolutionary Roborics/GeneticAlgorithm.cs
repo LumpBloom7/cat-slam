@@ -8,26 +8,35 @@ using TorchSharp;
 public class GeneticAlgorithm
 {
     private readonly int k;
-    public Population population;
     private readonly float parentSelectionPercentage;
     private readonly int genomeSize;
     private readonly float mutationRate;
     private Model model;
     public Genome? bestGenome = null;
 
+    private int populationSize;
+
     private float[] neuralNetworkInputArray;
     public GeneticAlgorithm(int populationSize, int numberOfInputs, int tournamentSelectionSize, float parentSelectionPercentage, float mutationRate)
     {
         this.mutationRate = mutationRate;
+        this.populationSize = populationSize;
 
         model = new Model(numberOfInputs, 2);
         genomeSize = model.TotalWeights;
         k = tournamentSelectionSize;
         this.parentSelectionPercentage = parentSelectionPercentage;
-
-        population = new Population(populationSize, genomeSize);
-
         neuralNetworkInputArray = new float[numberOfInputs];
+        InitializePopulationRandomly(populationSize);
+    }
+
+    private readonly List<Genome> population = [];
+
+    private void InitializePopulationRandomly(int populationSize)
+    {
+        population.Capacity = populationSize;
+        for (int i = 0; i < populationSize; i++)
+            population.Add(new Genome(genomeSize)); // Initialize each genome with random weights
     }
 
     private float evaluate(Genome individual, SimulationProvider.SimulationContext ctx)
@@ -77,26 +86,26 @@ public class GeneticAlgorithm
 
     private Genome tournamentSelection()
     {
-        Debug.Assert(population.Genomes.Length > 0);
+        Debug.Assert(population.Count > 0);
 
-        Random.Shared.Shuffle(population.Genomes);
+        population.Shuffle();
 
-        return population.Genomes.Take(k).MinBy(g => g.FitnessScore)!;
+        return population.Take(k).MinBy(g => g.FitnessScore)!;
     }
-
-    private Genome[] selectParents()
+    private HashSet<Genome> selectedParents = [];
+    private HashSet<Genome> selectParents()
     {
-        // Calculate 10% of the population size
-        int numberOfParents = (int)(population.PopulationSize * parentSelectionPercentage);
-        if (numberOfParents < 2)
-            return [];
+        selectedParents.Clear();
 
-        HashSet<Genome> selectedParents = [];
+        // Calculate 10% of the population size
+        int numberOfParents = (int)(populationSize * parentSelectionPercentage);
+        if (numberOfParents < 2)
+            return selectedParents;
 
         while (selectedParents.Count < numberOfParents)
             selectedParents.Add(tournamentSelection());
 
-        return [.. selectedParents];
+        return selectedParents;
     }
 
     public float[] singlePointCrossover(float[] parent1, float[] parent2)
@@ -136,15 +145,17 @@ public class GeneticAlgorithm
     public void Run(SimulationProvider.SimulationContext ctx)
     {
         //select parents
-        var parents = selectParents();
+        var parents = selectParents().ToArray();
         //Console.WriteLine("Parent length: " + parents.Length);
 
+        population.Clear();
+
         // Create new population, include parents implicitly
-        List<Genome> newPopulation = [.. parents];
+        population.AddRange(parents);
 
         Random rand = Random.Shared;
 
-        while (newPopulation.Count < population.PopulationSize)
+        while (population.Count < populationSize)
         {
             //Console.WriteLine("population creation count: "+count);
             //Select two random parents
@@ -164,13 +175,10 @@ public class GeneticAlgorithm
             Genome childGenome = new Genome(childWeights);
             childGenome.FitnessScore = evaluate(childGenome, ctx);
             //childGenome.evaluateFitness();
-            newPopulation.Add(childGenome);
+            population.Add(childGenome);
         }
 
-        bestGenome = newPopulation.MaxBy(g => g.FitnessScore);
-
-        Population newGeneration = new Population(genomeSize, [.. newPopulation]);
-        population = newGeneration;
+        bestGenome = population.MaxBy(g => g.FitnessScore);
     }
 }
 
@@ -194,32 +202,4 @@ public class Genome
         this.weights = weights;
     }
 
-}
-
-public class Population
-{
-    public Genome[] Genomes { get; set; } = [];
-    public int PopulationSize => Genomes.Length;
-    private int genomeSize;
-
-    public Population(int populationSize, int genomeSize)
-    {
-        this.genomeSize = genomeSize;
-        InitializePopulation(populationSize);
-    }
-    public Population(int genomeSize, Genome[] population)
-    {
-        this.genomeSize = genomeSize;
-        Genomes = population;
-    }
-
-    private void InitializePopulation(int populationSize)
-    {
-        Genome[] genomes = new Genome[populationSize];
-
-        for (int i = 0; i < populationSize; i++)
-            genomes[i] = new Genome(genomeSize); // Initialize each genome with random weights
-
-        Genomes = genomes;
-    }
 }
