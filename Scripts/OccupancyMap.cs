@@ -135,7 +135,7 @@ public partial class OccupancyMap : MultiMeshInstance3D
 
             Multimesh.SetInstanceTransform(cellContent.Index, newTransform);
 
-            var colour = CellColour * new Color(cellContent.OccupiedLikelihood, cellContent.OccupiedLikelihood, cellContent.OccupiedLikelihood,1);
+            var colour = CellColour * new Color(cellContent.OccupiedLikelihood, cellContent.OccupiedLikelihood, cellContent.OccupiedLikelihood, 1);
             Multimesh.SetInstanceColor(cellContent.Index, colour);
         }
     }

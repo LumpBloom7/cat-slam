@@ -64,13 +64,24 @@ public partial class RobotCharacter : CharacterBody3D
         }
     }
 
-	public Vector3 simulateMotion(float omega)
-	{
-		float velocity = (leftVel + rightVel) / 2;
-		Vector3 movementVector = (Vector3.Forward * velocity).Rotated(new Vector3(0, 1, 0), omega);
+    // public Vector3 simulateMotion(float omega)
+    // {
+    // 	float velocity = (leftVel + rightVel) / 2;
+    // 	Vector3 movementVector = (Vector3.Forward * velocity).Rotated(new Vector3(0, 1, 0), omega);
 
-		return new(movementVector.X, movementVector.Z, movementVector.Y);
-	}
+    // 	return new(movementVector.X, movementVector.Z, movementVector.Y);
+    // }
+
+    public Vector2 simulateMotion(float theta, double dt)
+    {
+        float velocity = (leftVel + rightVel) / 2;
+        float rotAmount = (rightVel - leftVel) / (Radius * 2);
+
+        // Vector3 movementVector = (Vector3.Forward * velocity * (float)dt).Rotated(new Vector3(0, 1, 0), theta + rotAmount * (float)dt);
+
+        // return new(movementVector.X, movementVector.Z, rotAmount * (float)dt);
+        return new(velocity, rotAmount);
+    }
 
     private int count = 0;
 
