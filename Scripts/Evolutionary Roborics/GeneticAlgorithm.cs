@@ -175,7 +175,7 @@ public class GeneticAlgorithm
             Genome childGenome = new Genome(childWeights);
             childGenome.FitnessScore = evaluate(childGenome, ctx);
 
-            Console.WriteLine(childGenome.FitnessScore);
+            //Console.WriteLine(childGenome.FitnessScore);
             //childGenome.evaluateFitness();
             population[i] = childGenome;
         }
