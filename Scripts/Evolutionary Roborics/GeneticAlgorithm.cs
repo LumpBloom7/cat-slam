@@ -30,13 +30,13 @@ public class GeneticAlgorithm
         InitializePopulationRandomly(populationSize);
     }
 
-    private readonly List<Genome> population = [];
+    private Genome[] population;
 
     private void InitializePopulationRandomly(int populationSize)
     {
-        population.Capacity = populationSize;
+        population = new Genome[populationSize];
         for (int i = 0; i < populationSize; i++)
-            population.Add(new Genome(genomeSize)); // Initialize each genome with random weights
+            population[i] = new Genome(genomeSize); // Initialize each genome with random weights
     }
 
     private float evaluate(Genome individual, SimulationProvider.SimulationContext ctx)
@@ -86,9 +86,9 @@ public class GeneticAlgorithm
 
     private Genome tournamentSelection()
     {
-        Debug.Assert(population.Count > 0);
+        Debug.Assert(population.Length > 0);
 
-        population.Shuffle();
+        Random.Shared.Shuffle(population);
 
         return population.Take(k).MaxBy(g => g.FitnessScore)!;
     }
@@ -148,14 +148,14 @@ public class GeneticAlgorithm
         var parents = selectParents().ToArray();
         //Console.WriteLine("Parent length: " + parents.Length);
 
-        population.Clear();
-
         // Create new population, include parents implicitly
-        population.AddRange(parents);
+        int i = 0;
+        for (; i < parents.Length; ++i)
+            population[i] = parents[i];
 
         Random rand = Random.Shared;
 
-        while (population.Count < populationSize)
+        for (; i < populationSize; ++i)
         {
             //Console.WriteLine("population creation count: "+count);
             //Select two random parents
@@ -177,7 +177,7 @@ public class GeneticAlgorithm
 
             Console.WriteLine(childGenome.FitnessScore);
             //childGenome.evaluateFitness();
-            population.Add(childGenome);
+            population[i] = childGenome;
         }
 
         bestGenome = population.MaxBy(g => g.FitnessScore);
