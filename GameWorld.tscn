@@ -143,7 +143,7 @@ CellSize = Vector2(0.1, 0.1)
 
 [node name="ParticleFilterRepresentation" type="Node3D" parent="Digital representations"]
 script = ExtResource("15_i451r")
-Colour = Color(1, 0, 0.983333, 1)
+Colour = Color(1, 0, 0.984314, 0)
 
 [node name="MultiMeshInstance3D" type="MultiMeshInstance3D" parent="Digital representations/ParticleFilterRepresentation"]
 script = ExtResource("14_6eaws")

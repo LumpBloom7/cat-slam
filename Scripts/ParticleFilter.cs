@@ -25,7 +25,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
     private Vector2 offset { get; set; }
 
     [Export]
-    public int ParticleCount { get; set; } = 100;
+    public int ParticleCount { get; set; } = 1000;
 
     [Export]
     public float Sigma { get; set; } = 2f;
@@ -38,10 +38,10 @@ public partial class ParticleFilter : MultiMeshInstance3D
 
     // Added parameters for Augmented MCL
     [Export]
-    public float AlphaSlow { get; set; } = 2f; // Decay rate for long-term average
+    public float AlphaSlow { get; set; } = 0.4f; // Decay rate for long-term average
 
     [Export]
-    public float AlphaFast { get; set; } = 2f; // Decay rate for short-term average
+    public float AlphaFast { get; set; } = 0.5f; // Decay rate for short-term average
 
     [Export]
     private float noiseXalpha { get; set; } = 0;
@@ -49,8 +49,8 @@ public partial class ParticleFilter : MultiMeshInstance3D
     private float noiseYalpha { get; set; } = 0f;
     [Export]
     private float noiseThetaAlpha { get; set; } = 0f;
-    private double wSlow = 0.05; // Long-term average weight
-    private double wFast = 0.1; // Short-term average weight
+    private double wSlow = 0; // Long-term average weight
+    private double wFast = 0; // Short-term average weight
 
     private float a1 = 0.5f;
 
@@ -63,6 +63,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
     private float a5 = 0.01f;
 
     private float a6 = 0.01f;
+    private bool hadObservationsLastFrame = false;
 
     [Signal]
     public delegate void GhostStateChangedEventHandler(Godot.Vector3 position, Godot.Vector3 rotation);
@@ -108,10 +109,10 @@ public partial class ParticleFilter : MultiMeshInstance3D
         Random r = Random.Shared;
         for (int i = 0; i < ParticleCount; i++)
         {
-            float y = ((float)r.NextDouble() * Height) - offset.Y;
+            float y = ((float)r.NextDouble() * Height) - offset.Y; // random number centered at 0
             float x = ((float)r.NextDouble() * Width) - offset.X;
-            float theta = ((float)r.NextDouble() * (2 * MathF.PI)) - MathF.PI;
-            Vector3 newVec = new Vector3(x, y, robotCharacter.GlobalRotation.Y);
+            float theta = ((float)r.NextDouble() * (2 * MathF.PI)) - MathF.PI; // angle between - pi and pi
+            Vector3 newVec = new Vector3(x, y, theta);
             // example how to do motion vector
             Particle newParticle = new Particle()
             {
@@ -129,17 +130,19 @@ public partial class ParticleFilter : MultiMeshInstance3D
 
         candidates.Clear();
         var beaconD = robotCharacter.BeaconDetector;
-        var realObservations = beaconD.GetTrackedBeacons();
+        var realObservations = beaconD.GetTrackedBeacons().Select(p => (p.Position * new Vector2(1, -1), p.Distance));
         double totalWeight = 0.0;
         double avgWeight = 0.0;
+
+       
 
         // Applying motion and updating the weights
         foreach (var particle in particles)
         {
             var currentPos = particle.Coordinate;
             float theta = particle.Coordinate.Z;
-            var motion_vector = robotCharacter.simulateMotion(theta.FromMathematicalAngle(), delta);
-            var num_mot_vec = new Vector2() { X = motion_vector.X, Y = motion_vector.Y };
+            var motion_vector = robotCharacter.simulateMotion(theta, delta);
+            var num_mot_vec = new Vector2() { X = motion_vector.X, Y = motion_vector.Y }; // Velocity and Angular Velocity
             // Vector3 vecAfterMotion = new Vector3(currentPos.X + motion_vector.X, currentPos.Y + motion_vector.Y, theta + motion_vector.Z);
             Vector3 vecAfterMotion = sampleNewPosition(currentPos, num_mot_vec, (float)delta);
             double newWeight = UpdateWeight(realObservations, vecAfterMotion);
@@ -202,7 +205,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
                 float y = ((float)random.NextDouble() * Height) - offset.Y;
                 float x = ((float)random.NextDouble() * Width) - offset.X;
                 float theta = ((float)random.NextDouble() * (2 * MathF.PI)) - MathF.PI;
-                Vector3 newVec = new Vector3(x, y, robotCharacter.GlobalRotation.Y);
+                Vector3 newVec = new Vector3(x, y, theta);
                 // example how to do motion vector
                 Particle newParticle = new Particle()
                 {
@@ -252,10 +255,19 @@ public partial class ParticleFilter : MultiMeshInstance3D
         //print();
         updateVisuals();
         var highestWeightParticle = particles.MaxBy(p => p.Weight);
+        // Make sure you map coordinates correctly here
         var best_position = CalculateWeightedAverage(particles);
-        var coord = new Godot.Vector3() { X = best_position.X, Y = 0f, Z = best_position.Y };
-        var rotation = new Godot.Vector3(0, best_position.Theta, 0);
+
+        // Keep the negative Y coordinate since your system is apparently calibrated for that
+        var coord = new Godot.Vector3() { X = best_position.X, Y = 0f, Z = -best_position.Y };
+
+
+
+        // Then convert to Godot's rotation system
+        var rotation = new Godot.Vector3(0, (best_position.Theta).FromMathematicalAngle(), 0);
+
         EmitSignal(SignalName.GhostStateChanged, coord, rotation);
+
     }
 
     private int count = 0;
@@ -304,34 +316,36 @@ public partial class ParticleFilter : MultiMeshInstance3D
     // }
     private double UpdateWeight(IEnumerable<(Vector2 Position, float Distance)> real, Vector3 particle)
     {
+        // Early return if no observations
+        if (!real.Any())
+        {
+            return 0.5 / ParticleCount;
+        }
+
         double logWeight = 0.0;
         Vector2 particlePos = new Vector2(particle.X, particle.Y);
-        float particleTheta = particle.Z;
-        // if (real.Count() == 0)
-        // {
-        //     return 1f / ParticleCount;
-        // }
+
         foreach (var observation in real)
         {
-            // Calculate expected observation from this particle's position
-            double realDistance = observation.Distance;
-            var realCords = observation.Position;
-
-            float partDist = (realCords - particlePos).Length();
+            float partDist = (observation.Position - particlePos).Length();
             double probRange = GaussianProbability(observation.Distance - partDist, Sigma);
 
-            // Bearing calculation 
-            float expectedBearing = MathF.Atan2(-(observation.Position.Y - particlePos.Y), observation.Position.X - particlePos.X);
-            float real_bearing = MathF.Atan2(-(observation.Position.Y - robotCharacter.GlobalPosition.Z), observation.Position.X - robotCharacter.GlobalPosition.X) - robotCharacter.GlobalRotation.Y.ToMathematicalAngle();
-            // Compare with particle orientation
-            float bearingDiff = real_bearing - expectedBearing;
-            double probBearing = GaussianProbability(bearingDiff, SigmaTheta);
-            // Combine probabilities
+            // Revised bearing calculation - note the sign adjustments
+            float expectedBearing = MathF.Atan2(observation.Position.Y - particlePos.Y,
+                                            observation.Position.X - particlePos.X);
 
-            if (probRange > 0 && probBearing > 0) // Avoid taking log of zero
+            // This version matches your coordinate transformation on output
+            float real_bearing = MathF.Atan2((observation.Position.Y + robotCharacter.GlobalPosition.Z),
+                                        observation.Position.X - robotCharacter.GlobalPosition.X);
+
+            // Normalize the difference properly
+            float bearingDiff = AngleDifference(real_bearing, expectedBearing);
+            double probBearing = GaussianProbability(bearingDiff, SigmaTheta);
+
+            if (probRange > 0 && probBearing > 0)
                 logWeight += Math.Log(probRange * probBearing);
             else
-                logWeight += -20.0;
+                logWeight += -5.0;
         }
         return Math.Exp(logWeight);
     }
@@ -350,7 +364,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
 
             Godot.Vector3 Scale = isBest ? new Godot.Vector3(1, 5, 1) : Godot.Vector3.One;
 
-            meshTransform = meshTransform.Scaled(Scale).TranslatedLocal(new Godot.Vector3(particles[i].Coordinate.X, 0, particles[i].Coordinate.Y));
+            meshTransform = meshTransform.Scaled(Scale).TranslatedLocal(new Godot.Vector3(particles[i].Coordinate.X, 0, -particles[i].Coordinate.Y));
 
             Multimesh.SetInstanceTransform(i, meshTransform);
             Multimesh.SetInstanceColor(i, isBest ? Color.Color8(0, 255, 0, 255) : Color.Color8(0, 255, 255, 255));
@@ -407,9 +421,6 @@ public partial class ParticleFilter : MultiMeshInstance3D
         double avgY = sumY / sumWeights;
         // Convert weighted average unit vector back to angle
         double avgTheta = Math.Atan2(sumSinTheta, sumCosTheta);
-        // Ensure the result is in [0, 2π)
-        if (avgTheta < 0)
-            avgTheta += 2 * Math.PI;
 
         return ((float)avgX, (float)avgY, (float)avgTheta);
     }
@@ -440,7 +451,21 @@ public partial class ParticleFilter : MultiMeshInstance3D
         float x_prime = position.X - (v_hat_div_w_hat * MathF.Sin(position.Z)) + (v_hat_div_w_hat * MathF.Sin(position.Z + (delta * w_hat)));
         float y_prime = position.Y + (v_hat_div_w_hat * MathF.Cos(position.Z)) - (v_hat_div_w_hat * MathF.Cos(position.Z + (delta * w_hat)));
         float theta_prime = position.Z + (delta * w_hat) + (delta * gamma_hat);
-
+        // Normalize the angle
+        //theta_prime = theta_prime);
         return new Vector3() { X = x_prime, Y = y_prime, Z = theta_prime };
+    }
+
+    private float NormalizeAngle(float angle)
+    {
+        // Using modulo to get principal value, then adjusting if needed
+        angle = angle % (2 * MathF.PI);
+
+        if (angle > MathF.PI)
+            angle -= 2 * MathF.PI;
+        else if (angle <= -MathF.PI)
+            angle += 2 * MathF.PI;
+
+        return angle;
     }
 }
