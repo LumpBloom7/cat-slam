@@ -134,7 +134,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
         double totalWeight = 0.0;
         double avgWeight = 0.0;
 
-       
+
 
         // Applying motion and updating the weights
         foreach (var particle in particles)
@@ -256,7 +256,12 @@ public partial class ParticleFilter : MultiMeshInstance3D
         updateVisuals();
         var highestWeightParticle = particles.MaxBy(p => p.Weight);
         // Make sure you map coordinates correctly here
-        var best_position = CalculateWeightedAverage(particles);
+        var tmp = CalculateWeightedAverage(particles);
+
+        if (!tmp.HasValue)
+            return;
+
+        var best_position = tmp.Value;
 
         // Keep the negative Y coordinate since your system is apparently calibrated for that
         var coord = new Godot.Vector3() { X = best_position.X, Y = 0f, Z = -best_position.Y };
@@ -393,15 +398,15 @@ public partial class ParticleFilter : MultiMeshInstance3D
         return diff;
     }
 
-    public static (float X, float Y, float Theta) CalculateWeightedAverage(
+    public static (float X, float Y, float Theta)? CalculateWeightedAverage(
         List<Particle> partics)
     {
         if (partics == null || partics.Count == 0)
-            throw new ArgumentException("Vector list cannot be empty");
+            return null;
 
         double sumWeights = partics.Sum(v => v.Weight);
         if (Math.Abs(sumWeights) < 1e-10)
-            throw new ArgumentException("Sum of weights is too close to zero");
+            return null;
 
         double sumX = 0;
         double sumY = 0;
