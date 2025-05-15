@@ -23,7 +23,7 @@ public partial class SimulationProvider : Node
 
     public SimulationContext createSimulationContext()
     {
-        var cDR = digitalRepresentations[0];
+        var cDR = digitalRepresentations.Where(d => d.Name == "KalmanRepresentation").FirstOrDefault();
 
         return new SimulationContext(cDR!.OccupancyMap, cDR.Ghost.GlobalPosition, cDR.Ghost.GlobalRotation.Y, robotCharacter);
     }
