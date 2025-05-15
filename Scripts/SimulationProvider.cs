@@ -95,7 +95,7 @@ public partial class SimulationProvider : Node
 
         public void Update(int leftInput, int rightInput, double dt)
         {
-            float STEPSIZE = (float)0.1;
+            float STEPSIZE = (float)dt * 10;
             // Compute acceleration amounts
             float leftAcc = 0;
             float rightAcc = 0;
