@@ -108,7 +108,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
             VisibleInstanceCount = ParticleCount
         };
     }
-
+    // Particle initialization
     public void initializeParticles()
     {
         Random r = Random.Shared;
@@ -127,7 +127,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
             particles.Add(newParticle);
         }
     }
-
+    // Main update block, updates each timestep
     public override void _PhysicsProcess(double delta)
     {
         particleDataStore storeData = new particleDataStore();
@@ -151,10 +151,11 @@ public partial class ParticleFilter : MultiMeshInstance3D
             float theta = particle.Coordinate.Z;
             var motion_vector = robotCharacter.simulateMotion(theta, delta);
             var num_mot_vec = new Vector2() { X = motion_vector.X, Y = motion_vector.Y }; // Velocity and Angular Velocity
-            // Vector3 vecAfterMotion = new Vector3(currentPos.X + motion_vector.X, currentPos.Y + motion_vector.Y, theta + motion_vector.Z);
+            // Sample Position
             Vector3 vecAfterMotion = sampleNewPosition(currentPos, num_mot_vec, (float)delta);
+            // Update Weight
             double newWeight = UpdateWeight(realObservations, vecAfterMotion, gp);
-
+            // If no observations, weight decay
             if (realObservations.Count == 0)
             {
                 newWeight = particle.Weight * 0.99;
@@ -168,21 +169,10 @@ public partial class ParticleFilter : MultiMeshInstance3D
             };
             candidates.Add(newParticle);
         }
-        // Normalizing
-        // GD.Print("----------Weights----------------");
-        // GD.Print(totalWeight);
         if (totalWeight > 0)
         {
             for (int i = 0; i < candidates.Count; i++)
             {
-                // double normalized = candidates[i].Weight / totalWeight;
-                // Particle newParticle = new Particle()
-                // {
-                //     Coordinate = candidates[i].Coordinate,
-                //     Weight = normalized
-                // };
-                // candidates[i] = newParticle;
-                //avgWeight += normalized;
                 avgWeight += candidates[i].Weight;
             }
             avgWeight /= candidates.Count;
@@ -210,7 +200,6 @@ public partial class ParticleFilter : MultiMeshInstance3D
             { // Prevent division by zero
                 randomSampleProb = Math.Max(0.0, 1.0 - wFast / wSlow);
             }
-            // Optionally add a minimum probability
             randomSampleProb = Math.Max(0, randomSampleProb);
 
             if (random.NextDouble() < randomSampleProb)
@@ -220,7 +209,6 @@ public partial class ParticleFilter : MultiMeshInstance3D
                 float x = ((float)random.NextDouble() * Width) - offset.X;
                 float theta = ((float)random.NextDouble() * (2 * MathF.PI)) - MathF.PI;
                 Vector3 newVec = new Vector3(x, y, theta);
-                // example how to do motion vector
                 Particle newParticle = new Particle()
                 {
                     Coordinate = newVec,
@@ -231,7 +219,6 @@ public partial class ParticleFilter : MultiMeshInstance3D
             else
             {
                 // Regular resampling
-                // double u = random.NextDouble();
                 double u = random.NextDouble() * cumulativeWeights[candidates.Count() - 1];
 
                 int index = 0;
@@ -266,7 +253,6 @@ public partial class ParticleFilter : MultiMeshInstance3D
 
         ArrayPool<double>.Shared.Return(cumulativeWeights);
 
-        //print();
         updateVisuals();
         var highestWeightParticle = particles.MaxBy(p => p.Weight);
         // Make sure you map coordinates correctly here
@@ -277,12 +263,12 @@ public partial class ParticleFilter : MultiMeshInstance3D
 
         var best_position = tmp.Value;
 
-        // Keep the negative Y coordinate since your system is apparently calibrated for that
+        // Keep the negative Y coordinate since the is system calibrated for that
         var coord = new Godot.Vector3() { X = best_position.X, Y = 0f, Z = -best_position.Y };
 
-        // Then convert to Godot's rotation system
+        // Then convert to Godot's rotation  system
         var rotation = new Godot.Vector3(0, (best_position.Theta).FromMathematicalAngle(), 0);
-
+        // Store stats
         storeData.errorX = MathF.Abs(robotCharacter.GlobalPosition.X - highestWeightParticle.Coordinate.X);
 
         storeData.errorY = MathF.Abs((-robotCharacter.GlobalPosition.Z) - highestWeightParticle.Coordinate.Y);
@@ -313,32 +299,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
         }
     }
 
-    // private double UpdateWeight(IEnumerable<(Vector2 Position, float Distance)> real, Vector3 particle)
-    // {
-    //     double logWeight = 0.0;
-    //     Vector2 particlePos = new Vector2(particle.X, particle.Y);
-    //     foreach (var observation in real)
-    //     {
-    //         // Calculate expected observation from this particle's position
-    //         double realDistance = observation.Distance;
-    //         var realCords = observation.Position;
-
-    //         float partDist = (realCords - particlePos).Length();
-
-    //         // Calculate the probability of this observation
-
-    //         double probRange = GaussianProbability(observation.Distance - partDist, Sigma);
-    //         //Console.WriteLine(probRange);
-
-    //         // Combine probabilities
-
-    //         if (probRange > 0) // Avoid taking log of zero
-    //             logWeight += Math.Log(probRange);
-    //         else
-    //             logWeight += -20.0;
-    //     }
-    //     return Math.Exp(logWeight);
-    // }
+    // Main code for updating weights
     private double UpdateWeight(IEnumerable<(Vector2 Position, float Distance)> real, Vector3 particle, Godot.Vector3 robotPos)
     {
         // Early return if no observations
@@ -356,11 +317,10 @@ public partial class ParticleFilter : MultiMeshInstance3D
             float partDist = (observation.Position - particlePos).Length();
             double probRange = GaussianProbability(observation.Distance - partDist, Sigma);
 
-            // Revised bearing calculation - note the sign adjustments
+            //bearing calculation
             float expectedBearing = MathF.Atan2(observation.Position.Y - particlePos.Y,
                                             observation.Position.X - particlePos.X);
 
-            // This version matches your coordinate transformation on output
             float real_bearing = MathF.Atan2((observation.Position.Y + robotPos.Z),
                                         observation.Position.X - robotPos.X);
 
@@ -370,11 +330,10 @@ public partial class ParticleFilter : MultiMeshInstance3D
 
             if (probRange > 0 && probBearing > 0)
                 logWeight += Math.Log(probRange * probBearing);
-            // else
-            // logWeight += -5.0;
         }
         return Math.Exp(logWeight);
     }
+    // Updates particle representations
     private void updateVisuals()
     {
         Multimesh.VisibleInstanceCount = particles.Count;
@@ -397,11 +356,13 @@ public partial class ParticleFilter : MultiMeshInstance3D
         }
     }
 
+    // Gaussian probability
     private static double GaussianProbability(double x, double sigma)
     {
         return Math.Exp(-0.5 * (x * x) / (sigma * sigma)) / (Math.Sqrt(2 * Math.PI) * sigma);
     }
 
+    // Another for noise
     private static double NextGaussian()
     {
         Random r = Random.Shared;
@@ -409,7 +370,6 @@ public partial class ParticleFilter : MultiMeshInstance3D
         double u2 = 1.0 - r.NextDouble();
         return Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2);
     }
-
     private float AngleDifference(float angle1, float angle2)
     {
         // Returns smallest angle difference in range [-π, π]
@@ -418,7 +378,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
         if (diff < -MathF.PI) diff += 2 * MathF.PI;
         return diff;
     }
-
+    // Calculates the weighted average position for all particles (Visualisation purposes)
     public static (float X, float Y, float Theta)? CalculateWeightedAverage(
         List<Particle> partics)
     {
@@ -453,7 +413,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
 
     private static float sampleGaussian(float mean, float stdDev)
     {
-        Random rand = Random.Shared; //reuse this if you are generating many
+        Random rand = Random.Shared;
         double u1 = 1.0 - rand.NextDouble(); //uniform(0,1] random doubles
         double u2 = 1.0 - rand.NextDouble();
         double randStdNormal = Math.Sqrt(-2.0 * Math.Log(u1)) *
@@ -462,9 +422,10 @@ public partial class ParticleFilter : MultiMeshInstance3D
 
         return (float)randNormal;
     }
-
+    // Sampling a new pose based on previous and controll
     private Vector3 sampleNewPosition(Vector3 position, Vector2 u, float delta)
     {
+        // Noise
         float v_hat = u.X + sampleGaussian(0, (a1 * MathF.Pow(u.X, 2) + a2 * MathF.Pow(u.Y, 2)));
         float w_hat = u.Y + sampleGaussian(0, (a3 * MathF.Pow(u.X, 2) + a4 * MathF.Pow(u.Y, 2)));
         float gamma_hat = sampleGaussian(0, (a5 * MathF.Pow(u.X, 2) + a6 * MathF.Pow(u.Y, 2)));
@@ -474,7 +435,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
         {
             v_hat_div_w_hat = v_hat / w_hat;
         }
-
+        // Next pose
         float x_prime = position.X - (v_hat_div_w_hat * MathF.Sin(position.Z)) + (v_hat_div_w_hat * MathF.Sin(position.Z + (delta * w_hat)));
         float y_prime = position.Y + (v_hat_div_w_hat * MathF.Cos(position.Z)) - (v_hat_div_w_hat * MathF.Cos(position.Z + (delta * w_hat)));
         float theta_prime = position.Z + (delta * w_hat) + (delta * gamma_hat);
@@ -482,7 +443,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
         //theta_prime = theta_prime);
         return new Vector3() { X = x_prime, Y = y_prime, Z = theta_prime };
     }
-
+    // Normalizes angle between -pi and pi
     private float NormalizeAngle(float angle)
     {
         // Using modulo to get principal value, then adjusting if needed

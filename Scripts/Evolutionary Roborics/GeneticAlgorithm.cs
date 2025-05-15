@@ -192,7 +192,7 @@ public class GeneticAlgorithm
         }
 
         bestGenome = population.MaxBy(g => g.FitnessScore);
-        Console.WriteLine(bestGenome?.FitnessScore);
+        //Console.WriteLine(bestGenome?.FitnessScore);
     }
 }
 
