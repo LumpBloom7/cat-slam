@@ -4,10 +4,21 @@ using System.Collections.Generic;
 using System.Formats.Asn1;
 using System.Linq;
 using System.Numerics;
+using System.Security.Cryptography.X509Certificates;
 using Godot;
 using MathNet.Numerics.Distributions;
 using Vector2 = System.Numerics.Vector2;
 using Vector3 = System.Numerics.Vector3;
+using CsvHelper;
+using System.IO;
+
+public class particleDataStore
+{
+    public float errorX { get; set; }
+    public float errorY { get; set; }
+    public float errorTheta { get; set; }
+    public float weight { get; set; }
+}
 
 public record struct Particle
 {
@@ -25,14 +36,14 @@ public partial class ParticleFilter : MultiMeshInstance3D
     private Vector2 offset { get; set; }
 
     [Export]
-    public int ParticleCount { get; set; } = 1000;
+    public int ParticleCount { get; set; } = 2000;
 
     [Export]
-    public float Sigma { get; set; } = 2f;
+    public float Sigma { get; set; } = 1f;
 
     public float SigmaTheta { get; set; } = 1f;
 
-
+    public List<particleDataStore> myData { get; set; } = [];
     private List<Particle> particles { get; } = [];
     private List<Particle> candidates { get; } = [];
 
@@ -52,13 +63,13 @@ public partial class ParticleFilter : MultiMeshInstance3D
     private double wSlow = 0; // Long-term average weight
     private double wFast = 0; // Short-term average weight
 
-    private float a1 = 0.5f;
+    private float a1 = 0.4f;
 
-    private float a2 = 0.5f;
+    private float a2 = 0.4f;
 
-    private float a3 = 0.5f;
+    private float a3 = 0.4f;
 
-    private float a4 = 0.5f;
+    private float a4 = 0.4f;
 
     private float a5 = 0.01f;
 
@@ -125,6 +136,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
 
     public override void _PhysicsProcess(double delta)
     {
+        particleDataStore storeData = new particleDataStore();
         if (robotCharacter is null)
             return;
 
@@ -134,7 +146,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
         double totalWeight = 0.0;
         double avgWeight = 0.0;
 
-       
+
 
         // Applying motion and updating the weights
         foreach (var particle in particles)
@@ -146,6 +158,10 @@ public partial class ParticleFilter : MultiMeshInstance3D
             // Vector3 vecAfterMotion = new Vector3(currentPos.X + motion_vector.X, currentPos.Y + motion_vector.Y, theta + motion_vector.Z);
             Vector3 vecAfterMotion = sampleNewPosition(currentPos, num_mot_vec, (float)delta);
             double newWeight = UpdateWeight(realObservations, vecAfterMotion);
+            if (!realObservations.Any())
+            {
+                newWeight = particle.Weight * 0.99;
+            }
             totalWeight += newWeight;
             Particle newParticle = new Particle()
             {
@@ -261,11 +277,17 @@ public partial class ParticleFilter : MultiMeshInstance3D
         // Keep the negative Y coordinate since your system is apparently calibrated for that
         var coord = new Godot.Vector3() { X = best_position.X, Y = 0f, Z = -best_position.Y };
 
-
-
         // Then convert to Godot's rotation system
         var rotation = new Godot.Vector3(0, (best_position.Theta).FromMathematicalAngle(), 0);
 
+        storeData.errorX = MathF.Abs(robotCharacter.GlobalPosition.X - highestWeightParticle.Coordinate.X);
+
+        storeData.errorY = MathF.Abs((-robotCharacter.GlobalPosition.Z) - highestWeightParticle.Coordinate.Y);
+
+        storeData.errorTheta = NormalizeAngle(MathF.Abs(robotCharacter.GlobalRotation.Y.ToMathematicalAngle() - highestWeightParticle.Coordinate.Z));
+
+        storeData.weight = (float)highestWeightParticle.Weight;
+        myData.Add(storeData);
         EmitSignal(SignalName.GhostStateChanged, coord, rotation);
 
     }
@@ -323,6 +345,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
         }
 
         double logWeight = 0.0;
+
         Vector2 particlePos = new Vector2(particle.X, particle.Y);
 
         foreach (var observation in real)
@@ -344,8 +367,8 @@ public partial class ParticleFilter : MultiMeshInstance3D
 
             if (probRange > 0 && probBearing > 0)
                 logWeight += Math.Log(probRange * probBearing);
-            else
-                logWeight += -5.0;
+            // else                
+                // logWeight += -5.0;
         }
         return Math.Exp(logWeight);
     }
@@ -373,7 +396,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
 
     private static double GaussianProbability(double x, double sigma)
     {
-        return Math.Exp(-0.5 * x * x / (sigma * sigma)) / (Math.Sqrt(2 * Math.PI) * sigma);
+        return Math.Exp(-0.5 * (x * x) / (sigma * sigma)) / (Math.Sqrt(2 * Math.PI) * sigma);
     }
 
     private static double NextGaussian()
@@ -442,6 +465,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
         float v_hat = u.X + sampleGaussian(0, (a1 * MathF.Pow(u.X, 2) + a2 * MathF.Pow(u.Y, 2)));
         float w_hat = u.Y + sampleGaussian(0, (a3 * MathF.Pow(u.X, 2) + a4 * MathF.Pow(u.Y, 2)));
         float gamma_hat = sampleGaussian(0, (a5 * MathF.Pow(u.X, 2) + a6 * MathF.Pow(u.Y, 2)));
+
         float v_hat_div_w_hat = 0;
         if (w_hat != 0)
         {
