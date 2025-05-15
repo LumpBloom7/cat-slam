@@ -18,12 +18,20 @@ public partial class BeaconDetector : Area3D
         AddChild(new CollisionShape3D() { Shape = new SphereShape3D { Radius = radius } });
     }
 
-    public IEnumerable<(System.Numerics.Vector2 Position, float Distance)> GetTrackedBeacons() => trackedBeacons.Values.Select(b =>
-        (
-            new System.Numerics.Vector2(b.Target.X, b.Target.Z),
-            (b.Target with { Y = 0 }).DistanceTo(GlobalPosition with { Y = 0 })
-        )
-    ).Where(t => t.Item2 <= radius);
+
+    public IEnumerable<(System.Numerics.Vector2 Position, float Distance)> GetTrackedBeacons()
+    {
+        var globalPos = GlobalPosition;
+        foreach (var t in trackedBeacons.Values)
+        {
+            float dist = (t.Target with { Y = 0 }).DistanceTo(globalPos with { Y = 0 });
+
+            if (dist >= radius)
+                continue;
+
+            yield return (new(t.Target.X, t.Target.Z), dist);
+        }
+    }
 
     public override void _Ready()
     {
@@ -66,7 +74,7 @@ public partial class BeaconDetector : Area3D
                 continue;
             }
  */
-            beacon.Value.Visible = (beacon.Key.GlobalPosition with { Y = 0 }).DistanceTo(GlobalPosition with { Y = 0 }) <= radius;
+            beacon.Value.Visible = (beaconPos with { Y = 0 }).DistanceTo(currentPos with { Y = 0 }) <= radius;
             beacon.Value.Target = beaconPos;
         }
     }

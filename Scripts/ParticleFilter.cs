@@ -130,9 +130,11 @@ public partial class ParticleFilter : MultiMeshInstance3D
 
         candidates.Clear();
         var beaconD = robotCharacter.BeaconDetector;
-        var realObservations = beaconD.GetTrackedBeacons().Select(p => (p.Position * new Vector2(1, -1), p.Distance));
+        var realObservations = beaconD.GetTrackedBeacons().Select(p => (p.Position * new Vector2(1, -1), p.Distance)).ToList();
         double totalWeight = 0.0;
         double avgWeight = 0.0;
+
+        var gp = robotCharacter.GlobalPosition;
 
 
 
@@ -145,7 +147,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
             var num_mot_vec = new Vector2() { X = motion_vector.X, Y = motion_vector.Y }; // Velocity and Angular Velocity
             // Vector3 vecAfterMotion = new Vector3(currentPos.X + motion_vector.X, currentPos.Y + motion_vector.Y, theta + motion_vector.Z);
             Vector3 vecAfterMotion = sampleNewPosition(currentPos, num_mot_vec, (float)delta);
-            double newWeight = UpdateWeight(realObservations, vecAfterMotion);
+            double newWeight = UpdateWeight(realObservations, vecAfterMotion, gp);
             totalWeight += newWeight;
             Particle newParticle = new Particle()
             {
@@ -266,8 +268,6 @@ public partial class ParticleFilter : MultiMeshInstance3D
         // Keep the negative Y coordinate since your system is apparently calibrated for that
         var coord = new Godot.Vector3() { X = best_position.X, Y = 0f, Z = -best_position.Y };
 
-
-
         // Then convert to Godot's rotation system
         var rotation = new Godot.Vector3(0, (best_position.Theta).FromMathematicalAngle(), 0);
 
@@ -319,7 +319,7 @@ public partial class ParticleFilter : MultiMeshInstance3D
     //     }
     //     return Math.Exp(logWeight);
     // }
-    private double UpdateWeight(IEnumerable<(Vector2 Position, float Distance)> real, Vector3 particle)
+    private double UpdateWeight(IEnumerable<(Vector2 Position, float Distance)> real, Vector3 particle, Godot.Vector3 robotPos)
     {
         // Early return if no observations
         if (!real.Any())
@@ -340,8 +340,8 @@ public partial class ParticleFilter : MultiMeshInstance3D
                                             observation.Position.X - particlePos.X);
 
             // This version matches your coordinate transformation on output
-            float real_bearing = MathF.Atan2((observation.Position.Y + robotCharacter.GlobalPosition.Z),
-                                        observation.Position.X - robotCharacter.GlobalPosition.X);
+            float real_bearing = MathF.Atan2((observation.Position.Y + robotPos.Z),
+                                        observation.Position.X - robotPos.X);
 
             // Normalize the difference properly
             float bearingDiff = AngleDifference(real_bearing, expectedBearing);
