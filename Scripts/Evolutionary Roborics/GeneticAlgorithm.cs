@@ -51,7 +51,7 @@ public class GeneticAlgorithm
         //Define the NN
         model.setWeights(individual.weights); // assign the weights to out NN
 
-        for (int i = 0; i < 50; ++i)
+        for (int i = 0; i < 10; ++i)
         {
             //perform step
             float[] data = model.Forward(neuralNetworkInputArray);
@@ -92,6 +92,7 @@ public class GeneticAlgorithm
 
         return population.Take(k).MaxBy(g => g.FitnessScore)!;
     }
+
     private HashSet<Genome> selectedParents = [];
     private HashSet<Genome> selectParents()
     {
@@ -145,15 +146,26 @@ public class GeneticAlgorithm
     public void Run(SimulationProvider.SimulationContext ctx)
     {
         //select parents
-        var parents = selectParents().ToArray();
+        var parentsEnumerable = population.OrderByDescending(g => g.FitnessScore).Take(k);
+
+        var parents = parentsEnumerable.ToArray();
         //Console.WriteLine("Parent length: " + parents.Length);
 
         // Create new population, include parents implicitly
         int i = 0;
         for (; i < parents.Length; ++i)
-            population[i] = parents[i];
+        {
+            var parent = population[i] = parents[i];
+            parent.FitnessScore = evaluate(parent, ctx);
+        }
 
         Random rand = Random.Shared;
+
+        for (; i < populationSize / 2; ++i)
+        {
+            var newcomer = population[i] = new Genome(genomeSize); // Initialize each genome with random weights
+            newcomer.FitnessScore = evaluate(newcomer, ctx);
+        }
 
         for (; i < populationSize; ++i)
         {
@@ -175,12 +187,12 @@ public class GeneticAlgorithm
             Genome childGenome = new Genome(childWeights);
             childGenome.FitnessScore = evaluate(childGenome, ctx);
 
-            Console.WriteLine(childGenome.FitnessScore);
             //childGenome.evaluateFitness();
             population[i] = childGenome;
         }
 
         bestGenome = population.MaxBy(g => g.FitnessScore);
+        Console.WriteLine(bestGenome?.FitnessScore);
     }
 }
 
