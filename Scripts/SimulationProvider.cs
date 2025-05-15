@@ -129,11 +129,11 @@ public partial class SimulationProvider : Node
             float occMapHeight = occupancyMap.CellContents.GetLength(0);
             float occMapWidth = occupancyMap.CellContents.GetLength(1);
 
-            float angleStep = 2 * MathF.PI / 12;
+            float angleStep = 2 * MathF.PI / 4;
 
-            Vector3 line = Vector3.Forward * Radius * 1.5f;
+            Vector3 line = Vector3.Forward * Radius;
 
-            for (int i = 0; i < 12; ++i)
+            for (int i = 0; i < 4; ++i)
             {
                 float angleDiff = angleStep * i;
                 var target = Position + line.Rotated(new(0, 1, 0), angleDiff + Rotation);
@@ -147,7 +147,7 @@ public partial class SimulationProvider : Node
                     if (OOB)
                         return;
 
-                    if (occupancyMap.CellContents[cell.Y, cell.X].OccupiedLikelihood >= 0.7)
+                    if (occupancyMap.CellContents[cell.Y, cell.X].OccupiedLikelihood >= 0.6)
                         return;
                 }
             }

@@ -106,6 +106,15 @@ font_size = 80
 outline_size = 18
 script = ExtResource("7_oql0q")
 
+[node name="RobotIndicator" type="Label3D" parent="Robot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+visible = false
+billboard = 1
+no_depth_test = true
+fixed_size = true
+texture_filter = 5
+text = "🤖"
+
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 100, 0)
 shadow_enabled = true
@@ -169,7 +178,8 @@ C: Cycle camera views
 H: Toggle geometry
 Q/A : Accelerate/Decelerate left wheel
 E/D : Accelerate/Decelerate right wheel
-W/S: Accelerate/Decelerate both wheels"
+W/S: Accelerate/Decelerate both wheels
+X: Enable GANN Control (Can be manually overriden via control)"
 label_settings = SubResource("LabelSettings_2dy0i")
 
 [node name="Camera Cycler" type="Node3D" parent="."]
@@ -188,7 +198,7 @@ script = ExtResource("15_ofih1")
 script = ExtResource("15_6eaws")
 PopulationSize = 50
 MutationRate = 0.2
-TournamentSize_k = 10
+TournamentSize_k = 20
 
 [connection signal="GhostStateChanged" from="Robot" to="Digital representations/KalmanRepresentation" method="UpdateGhostPosition"]
 [connection signal="LeftMotorValueChanged" from="Robot" to="Robot/MotorLabels/Label3D" method="OnSignalReceived"]

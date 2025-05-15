@@ -35,12 +35,20 @@ public partial class GANNControlProvider : Node
         simulationProvider = GetNode("/root").GetDescendants<SimulationProvider>(true).FirstOrDefault();
     }
 
-    public (int, int) GANNInput { get; private set; } = (0, 0);
+    private bool gannEnabled = false;
 
-    public override void _PhysicsProcess(double delta)
+    public override void _Input(InputEvent @event)
     {
-        if (geneticAlgorithm is null || simulationProvider is null)
-            return;
+        base._Input(@event);
+
+        if (@event.IsActionPressed("ToggleGann", false))
+            gannEnabled = !gannEnabled;
+    }
+
+    public (int, int)? ComputeGannInput(double delta)
+    {
+        if (geneticAlgorithm is null || simulationProvider is null || !gannEnabled)
+            return null;
 
         var simulation = simulationProvider.createSimulationContext();
 
@@ -64,9 +72,9 @@ public partial class GANNControlProvider : Node
         }
 
         if (bestGenome is null)
-            return;
+            return null;
 
-        GANNInput = geneticAlgorithm.evaluateToGetAction(bestGenome, simulation);
-        GD.Print(GANNInput);
+        return geneticAlgorithm.evaluateToGetAction(bestGenome, simulation);
     }
+
 }

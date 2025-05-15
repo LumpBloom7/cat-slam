@@ -43,6 +43,7 @@ public partial class RobotCharacter : CharacterBody3D
     private GANNControlProvider? gannControlProvider = null;
 
     private Node3D ghostNode = null!;
+    private Label3D gannOperationIcon = null!;
 
     private bool useGannControl = true;
 
@@ -52,6 +53,7 @@ public partial class RobotCharacter : CharacterBody3D
         AddChild(BeaconDetector = new BeaconDetector(OmnidirectionalSensorRange));
 
         gannControlProvider = GetNode("/root").GetDescendants<GANNControlProvider>(true).FirstOrDefault();
+        gannOperationIcon = (Label3D)GetNode("RobotIndicator");
     }
 
     public void InitPosition(Vector2 position)
@@ -97,23 +99,32 @@ public partial class RobotCharacter : CharacterBody3D
         float leftAcc = 0;
         float rightAcc = 0;
 
-        if (gannControlProvider is not null && useGannControl)
-        {
-            leftAcc += AccelerationPerSecond * (float)delta * gannControlProvider.GANNInput.Item1;
-            rightAcc += AccelerationPerSecond * (float)delta * gannControlProvider.GANNInput.Item2;
-        }
-        else
-        {
-            if (Input.IsActionPressed("LeftMotorForwards"))
-                leftAcc += AccelerationPerSecond * (float)delta;
-            if (Input.IsActionPressed("LeftMotorBackwards"))
-                leftAcc -= AccelerationPerSecond * (float)delta;
+        gannOperationIcon.Visible = false;
 
-            if (Input.IsActionPressed("RightMotorForwards"))
-                rightAcc += AccelerationPerSecond * (float)delta;
-            if (Input.IsActionPressed("RightMotorBackwards"))
-                rightAcc -= AccelerationPerSecond * (float)delta;
+        if (Input.IsActionPressed("LeftMotorForwards"))
+            leftAcc += AccelerationPerSecond * (float)delta;
+        if (Input.IsActionPressed("LeftMotorBackwards"))
+            leftAcc -= AccelerationPerSecond * (float)delta;
+
+        if (Input.IsActionPressed("RightMotorForwards"))
+            rightAcc += AccelerationPerSecond * (float)delta;
+        if (Input.IsActionPressed("RightMotorBackwards"))
+            rightAcc -= AccelerationPerSecond * (float)delta;
+
+
+        if ((leftAcc == 0 && rightAcc == 0) && gannControlProvider is not null && useGannControl)
+        {
+            var gannInput = gannControlProvider.ComputeGannInput(delta);
+
+            if (gannInput is not null)
+            {
+                leftAcc += AccelerationPerSecond * (float)delta * gannInput.Value.Item1;
+                rightAcc += AccelerationPerSecond * (float)delta * gannInput.Value.Item2;
+                gannOperationIcon.Visible = true;
+
+            }
         }
+
 
         // Apply speed changes
         if (leftAcc == 0)
