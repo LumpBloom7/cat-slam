@@ -14,8 +14,7 @@ public partial class OccupancyMap : MultiMeshInstance3D
     [Export]
     public Color CellColour { get; set; } = Color.Color8(255, 0, 255);
 
-
-    private Cell[,] cellContents = null!;
+    public Cell[,] CellContents { get; private set; } = null!;
 
     private StandardMaterial3D material = null!;
 
@@ -49,16 +48,16 @@ public partial class OccupancyMap : MultiMeshInstance3D
         Multimesh.VisibleInstanceCount = Width * Height;
 
         Position = -new Vector3(Width * CellSize.X, 0, Height * CellSize.Y) / 2;
-        cellContents = new Cell[Height, Width];
+        CellContents = new Cell[Height, Width];
 
-        for (int y = 0; y < cellContents.GetLength(0); ++y)
+        for (int y = 0; y < CellContents.GetLength(0); ++y)
         {
-            for (int x = 0; x < cellContents.GetLength(1); ++x)
+            for (int x = 0; x < CellContents.GetLength(1); ++x)
             {
                 int index = y * Height + x;
                 var meshTransform = Transform3D.Identity;
 
-                var cell = cellContents[y, x] = new Cell
+                var cell = CellContents[y, x] = new Cell
                 {
                     X = x,
                     Y = y,
@@ -74,7 +73,7 @@ public partial class OccupancyMap : MultiMeshInstance3D
         }
     }
 
-    public IEnumerable<Cell> getIntersectingTiles(Vector3 origin, Vector3 target)
+    public IEnumerable<(Cell, float prog)> getIntersectingTiles(Vector3 origin, Vector3 target)
     {
         const float PRECISION = 0.01f;
 
@@ -83,8 +82,7 @@ public partial class OccupancyMap : MultiMeshInstance3D
 
         Vector2 current = new Vector2(origin.X, origin.Z) + halfMapSize;
 
-        Cell cell = new Cell { X = -5000, Y = -5000 };
-        for (float i = 0; i <= 1; i += PRECISION)
+        for (float i = 0; i <= 1.1; i += PRECISION)
         {
             Cell nextCell = new()
             {
@@ -92,32 +90,25 @@ public partial class OccupancyMap : MultiMeshInstance3D
                 Y = (int)Math.Round(current.Y / CellSize.Y)
             };
             current += step;
-
-            if (nextCell != cell)
-            {
-                yield return nextCell;
-            }
-
-            cell = nextCell;
+            yield return (nextCell, i);
         }
     }
 
     public void ProcessRayCast(Vector3 origin, Vector3 target, bool isColliding)
     {
-        var cells = getIntersectingTiles(origin, target).ToArray();
+        var cells = getIntersectingTiles(origin, target).GroupBy(x => x.Item1).Select(g => g.MaxBy(c => c.prog));
 
-        for (int i = 0; i < cells.Length; ++i)
+        foreach ((Cell cell, float prog) in cells)
         {
-            bool isFilled = i == cells.Length - 1 && isColliding;
-            var cell = cells[i];
+            bool isFilled = prog >= 0.9f && isColliding;
 
-            if (cell.Y < 0 || cell.Y >= cellContents.GetLength(0))
+            if (cell.Y < 0 || cell.Y >= CellContents.GetLength(0))
                 continue;
 
-            if (cell.X < 0 || cell.X >= cellContents.GetLength(1))
+            if (cell.X < 0 || cell.X >= CellContents.GetLength(1))
                 continue;
 
-            ref var cellContent = ref cellContents[cell.Y, cell.X];
+            ref var cellContent = ref CellContents[cell.Y, cell.X];
 
             float dist = new Vector2(cell.X * CellSize.X, cell.Y * CellSize.Y).DistanceTo(new Vector2(origin.X, origin.Z) + MapSize / 2);
             float prob = ((isFilled ? 1 : 0) - 0.5f) * (1 - Math.Clamp(dist, 0, 5) / 5);
@@ -127,7 +118,6 @@ public partial class OccupancyMap : MultiMeshInstance3D
             {
                 cellContent.explored = true;
                 ++exploredTiles;
-                GD.Print(exploredTiles);
             }
 
             var newTransform = Transform3D.Identity;
@@ -140,7 +130,7 @@ public partial class OccupancyMap : MultiMeshInstance3D
         }
     }
 
-    public record struct Cell
+    public record struct Cell : IEquatable<Cell>
     {
         public int X { get; init; }
         public int Y { get; init; }

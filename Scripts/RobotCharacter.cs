@@ -20,8 +20,8 @@ public partial class RobotCharacter : CharacterBody3D
     [Export]
     public float OmnidirectionalSensorRange { get; set; } = 5f;
 
-    private float leftVel = 0;
-    private float rightVel = 0;
+    public float LeftVel { get; private set; } = 0;
+    public float RightVel { get; private set; } = 0;
 
     [Signal]
     public delegate void LeftMotorValueChangedEventHandler(float velocity);
@@ -40,12 +40,18 @@ public partial class RobotCharacter : CharacterBody3D
 
     private KalmanFilter? kalmanFilter { get; set; } = null;
 
+    private GANNControlProvider? gannControlProvider = null;
+
     private Node3D ghostNode = null!;
+
+    private bool useGannControl = true;
 
     public override void _Ready()
     {
         base._Ready();
         AddChild(BeaconDetector = new BeaconDetector(OmnidirectionalSensorRange));
+
+        gannControlProvider = GetNode("/root").GetDescendants<GANNControlProvider>(true).FirstOrDefault();
     }
 
     public void InitPosition(Vector2 position)
@@ -74,8 +80,8 @@ public partial class RobotCharacter : CharacterBody3D
 
     public Vector2 simulateMotion(float theta, double dt)
     {
-        float velocity = (leftVel + rightVel) / 2;
-        float rotAmount = (rightVel - leftVel) / (Radius * 2);
+        float velocity = (LeftVel + RightVel) / 2;
+        float rotAmount = (RightVel - LeftVel) / (Radius * 2);
 
         // Vector3 movementVector = (Vector3.Forward * velocity * (float)dt).Rotated(new Vector3(0, 1, 0), theta + rotAmount * (float)dt);
 
@@ -90,33 +96,42 @@ public partial class RobotCharacter : CharacterBody3D
         // Compute acceleration amounts
         float leftAcc = 0;
         float rightAcc = 0;
-        if (Input.IsActionPressed("LeftMotorForwards"))
-            leftAcc += AccelerationPerSecond * (float)delta;
-        if (Input.IsActionPressed("LeftMotorBackwards"))
-            leftAcc -= AccelerationPerSecond * (float)delta;
 
-        if (Input.IsActionPressed("RightMotorForwards"))
-            rightAcc += AccelerationPerSecond * (float)delta;
-        if (Input.IsActionPressed("RightMotorBackwards"))
-            rightAcc -= AccelerationPerSecond * (float)delta;
+        if (gannControlProvider is not null && useGannControl)
+        {
+            leftAcc += AccelerationPerSecond * (float)delta * gannControlProvider.GANNInput.Item1;
+            rightAcc += AccelerationPerSecond * (float)delta * gannControlProvider.GANNInput.Item2;
+        }
+        else
+        {
+            if (Input.IsActionPressed("LeftMotorForwards"))
+                leftAcc += AccelerationPerSecond * (float)delta;
+            if (Input.IsActionPressed("LeftMotorBackwards"))
+                leftAcc -= AccelerationPerSecond * (float)delta;
+
+            if (Input.IsActionPressed("RightMotorForwards"))
+                rightAcc += AccelerationPerSecond * (float)delta;
+            if (Input.IsActionPressed("RightMotorBackwards"))
+                rightAcc -= AccelerationPerSecond * (float)delta;
+        }
 
         // Apply speed changes
         if (leftAcc == 0)
-            leftVel = Math.Max(Math.Abs(leftVel) - DeccelerationPerSecond * (float)delta, 0) * MathF.Sign(leftVel);
+            LeftVel = Math.Max(Math.Abs(LeftVel) - DeccelerationPerSecond * (float)delta, 0) * MathF.Sign(LeftVel);
         else
-            leftVel = Math.Clamp(leftAcc + leftVel, -MaxSpeed, MaxSpeed);
+            LeftVel = Math.Clamp(leftAcc + LeftVel, -MaxSpeed, MaxSpeed);
 
         if (rightAcc == 0)
-            rightVel = Math.Max(Math.Abs(rightVel) - DeccelerationPerSecond * (float)delta, 0) * MathF.Sign(rightVel);
+            RightVel = Math.Max(Math.Abs(RightVel) - DeccelerationPerSecond * (float)delta, 0) * MathF.Sign(RightVel);
         else
-            rightVel = Math.Clamp(rightAcc + rightVel, -MaxSpeed, MaxSpeed);
+            RightVel = Math.Clamp(rightAcc + RightVel, -MaxSpeed, MaxSpeed);
 
 
-        float rotAmount = (rightVel - leftVel) / (Radius * 2);
+        float rotAmount = (RightVel - LeftVel) / (Radius * 2);
 
         Rotation = Rotation with { Y = Rotation.Y + rotAmount * (float)delta };
 
-        float velocity = (leftVel + rightVel) / 2;
+        float velocity = (LeftVel + RightVel) / 2;
 
         Vector3 movementVector = (Vector3.Forward * velocity).Rotated(new Vector3(0, 1, 0), Rotation.Y);
 
@@ -127,10 +142,10 @@ public partial class RobotCharacter : CharacterBody3D
         MoveAndSlide();
 
         if (origPos == Position && rotAmount == 0)
-            leftVel = rightVel = 0;
+            LeftVel = RightVel = 0;
 
-        EmitSignal(SignalName.LeftMotorValueChanged, leftVel);
-        EmitSignal(SignalName.RightMotorValueChanged, rightVel);
+        EmitSignal(SignalName.LeftMotorValueChanged, LeftVel);
+        EmitSignal(SignalName.RightMotorValueChanged, RightVel);
         EmitSignal(SignalName.PositionChanged, Position);
 
         // Update Kalman filter

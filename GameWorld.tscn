@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://cg4dlisrpp3dm"]
+[gd_scene load_steps=23 format=3 uid="uid://cg4dlisrpp3dm"]
 
 [ext_resource type="Script" uid="uid://bmbtxts83u5tr" path="res://Scripts/RobotCharacter.cs" id="2_2dy0i"]
 [ext_resource type="PackedScene" uid="uid://dgqpwmfnga1gx" path="res://assets/marisa_fumo/scene.gltf" id="2_28gir"]
@@ -13,7 +13,9 @@
 [ext_resource type="Script" uid="uid://dv1nty3tab1oi" path="res://Scripts/ParticleFilter.cs" id="14_6eaws"]
 [ext_resource type="Script" uid="uid://vtvl8g2wbji7" path="res://Scripts/Utils/CameraCycler.cs" id="14_i451r"]
 [ext_resource type="Script" uid="uid://c1xrtvyvvnfad" path="res://Scripts/RobotPath.cs" id="14_oql0q"]
+[ext_resource type="Script" uid="uid://df02w2xa2efps" path="res://Scripts/Evolutionary Roborics/GANNControlProvider.cs" id="15_6eaws"]
 [ext_resource type="Script" uid="uid://bnmbwfvh2bjok" path="res://Scripts/DigitalRepresentation.cs" id="15_i451r"]
+[ext_resource type="Script" uid="uid://biuqenqtdfjkd" path="res://Scripts/SimulationProvider.cs" id="15_ofih1"]
 [ext_resource type="Shader" uid="uid://dtwhoplmqoos" path="res://assets/water.gdshader" id="19_4fmel"]
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_o0r38"]
@@ -53,7 +55,7 @@ outline_color = Color(0, 0, 0, 1)
 [node name="Robot" type="CharacterBody3D" parent="."]
 floor_stop_on_slope = false
 script = ExtResource("2_2dy0i")
-OmnidirectionalSensorRange = 4.0
+OmnidirectionalSensorRange = 10.0
 
 [node name="BehindCamera" type="Camera3D" parent="Robot"]
 transform = Transform3D(1, 0, 0, 0, 0.819152, 0.573576, 0, -0.573576, 0.819152, 0, 1.215, 1)
@@ -75,6 +77,7 @@ transform = Transform3D(-1, 0, -1.50996e-07, 0, 1, 0, 1.50996e-07, 0, -1, 0, 0, 
 [node name="SensorArray" type="Node3D" parent="Robot"]
 transform = Transform3D(1, 0, 0, 0, 1, -2.98023e-08, 0, 2.98023e-08, 1, 0, 0.0450001, 0)
 script = ExtResource("7_i451r")
+Noise = 0.0
 
 [node name="MotorLabels" type="Node3D" parent="Robot"]
 transform = Transform3D(1, 0, 0, 0, 1, -2.98023e-08, 0, 2.98023e-08, 1, 0, 0, 5.96046e-08)
@@ -175,6 +178,15 @@ InputMapAction = "SwitchCamera"
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 2, 0)
 projection = 1
 size = 30.0
+
+[node name="SimulationProvider" type="Node" parent="."]
+script = ExtResource("15_ofih1")
+
+[node name="GANNControlProvider" type="Node" parent="."]
+script = ExtResource("15_6eaws")
+PopulationSize = 50
+MutationRate = 0.2
+TournamentSize_k = 10
 
 [connection signal="GhostStateChanged" from="Robot" to="Digital representations/KalmanRepresentation" method="UpdateGhostPosition"]
 [connection signal="LeftMotorValueChanged" from="Robot" to="Robot/MotorLabels/Label3D" method="OnSignalReceived"]
