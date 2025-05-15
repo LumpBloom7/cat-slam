@@ -54,7 +54,7 @@ outline_color = Color(0, 0, 0, 1)
 [node name="Robot" type="CharacterBody3D" parent="."]
 floor_stop_on_slope = false
 script = ExtResource("2_2dy0i")
-OmnidirectionalSensorRange = 4.0
+OmnidirectionalSensorRange = 10.0
 
 [node name="BehindCamera" type="Camera3D" parent="Robot"]
 transform = Transform3D(1, 0, 0, 0, 0.819152, 0.573576, 0, -0.573576, 0.819152, 0, 1.215, 1)
@@ -76,6 +76,7 @@ transform = Transform3D(-1, 0, -1.50996e-07, 0, 1, 0, 1.50996e-07, 0, -1, 0, 0, 
 [node name="SensorArray" type="Node3D" parent="Robot"]
 transform = Transform3D(1, 0, 0, 0, 1, -2.98023e-08, 0, 2.98023e-08, 1, 0, 0.0450001, 0)
 script = ExtResource("7_i451r")
+Noise = 0.0
 
 [node name="MotorLabels" type="Node3D" parent="Robot"]
 transform = Transform3D(1, 0, 0, 0, 1, -2.98023e-08, 0, 2.98023e-08, 1, 0, 0, 5.96046e-08)
@@ -179,6 +180,9 @@ script = ExtResource("15_ofih1")
 
 [node name="GANNControlProvider" type="Node" parent="."]
 script = ExtResource("15_6eaws")
+PopulationSize = 50
+MutationRate = 0.2
+TournamentSize_k = 10
 
 [connection signal="GhostStateChanged" from="Robot" to="Digital representations/KalmanRepresentation" method="UpdateGhostPosition"]
 [connection signal="LeftMotorValueChanged" from="Robot" to="Robot/MotorLabels/Label3D" method="OnSignalReceived"]

@@ -73,7 +73,7 @@ public partial class OccupancyMap : MultiMeshInstance3D
         }
     }
 
-    public IEnumerable<Cell> getIntersectingTiles(Vector3 origin, Vector3 target)
+    public IEnumerable<(Cell, float prog)> getIntersectingTiles(Vector3 origin, Vector3 target)
     {
         const float PRECISION = 0.01f;
 
@@ -82,8 +82,7 @@ public partial class OccupancyMap : MultiMeshInstance3D
 
         Vector2 current = new Vector2(origin.X, origin.Z) + halfMapSize;
 
-        Cell cell = new Cell { X = -5000, Y = -5000 };
-        for (float i = 0; i <= 1; i += PRECISION)
+        for (float i = 0; i <= 1.1; i += PRECISION)
         {
             Cell nextCell = new()
             {
@@ -91,24 +90,17 @@ public partial class OccupancyMap : MultiMeshInstance3D
                 Y = (int)Math.Round(current.Y / CellSize.Y)
             };
             current += step;
-
-            if (nextCell != cell)
-            {
-                yield return nextCell;
-            }
-
-            cell = nextCell;
+            yield return (nextCell, i);
         }
     }
 
     public void ProcessRayCast(Vector3 origin, Vector3 target, bool isColliding)
     {
-        var cells = getIntersectingTiles(origin, target).ToArray();
+        var cells = getIntersectingTiles(origin, target).GroupBy(x => x.Item1).Select(g => g.MaxBy(c => c.prog));
 
-        for (int i = 0; i < cells.Length; ++i)
+        foreach ((Cell cell, float prog) in cells)
         {
-            bool isFilled = i == cells.Length - 1 && isColliding;
-            var cell = cells[i];
+            bool isFilled = prog >= 0.9f && isColliding;
 
             if (cell.Y < 0 || cell.Y >= CellContents.GetLength(0))
                 continue;
@@ -137,8 +129,6 @@ public partial class OccupancyMap : MultiMeshInstance3D
             Multimesh.SetInstanceColor(cellContent.Index, colour);
         }
     }
-
-
 
     public record struct Cell : IEquatable<Cell>
     {
