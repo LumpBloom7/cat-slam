@@ -39,7 +39,7 @@ public class GeneticAlgorithm
             population[i] = new Genome(genomeSize); // Initialize each genome with random weights
     }
 
-    private float evaluate(Genome individual, SimulationProvider.SimulationContext ctx)
+    private float evaluate(Genome individual, SimulationProvider.SimulationContext ctx, double dt)
     {
         // Reset the environment
         ctx.Reset();
@@ -56,7 +56,7 @@ public class GeneticAlgorithm
             //perform step
             float[] data = model.Forward(neuralNetworkInputArray);
 
-            ctx.Update((int)Math.Round(data[0]), (int)Math.Round(data[1])); //update enviroment
+            ctx.Update((int)Math.Round(data[0]), (int)Math.Round(data[1]), dt); //update enviroment
 
             //update neural network inputs for next step
             ctx.SensorValues.CopyTo(neuralNetworkInputArray, 0);
@@ -143,7 +143,7 @@ public class GeneticAlgorithm
         return childWeights;
     }
 
-    public void Run(SimulationProvider.SimulationContext ctx)
+    public void Run(SimulationProvider.SimulationContext ctx, double dt)
     {
         //select parents
         var parentsEnumerable = population.OrderByDescending(g => g.FitnessScore).Take(k);
@@ -156,7 +156,7 @@ public class GeneticAlgorithm
         for (; i < parents.Length; ++i)
         {
             var parent = population[i] = parents[i];
-            parent.FitnessScore = evaluate(parent, ctx);
+            parent.FitnessScore = evaluate(parent, ctx, dt);
         }
 
         Random rand = Random.Shared;
@@ -164,7 +164,7 @@ public class GeneticAlgorithm
         for (; i < populationSize / 2; ++i)
         {
             var newcomer = population[i] = new Genome(genomeSize); // Initialize each genome with random weights
-            newcomer.FitnessScore = evaluate(newcomer, ctx);
+            newcomer.FitnessScore = evaluate(newcomer, ctx, dt);
         }
 
         for (; i < populationSize; ++i)
@@ -185,7 +185,7 @@ public class GeneticAlgorithm
 
             //Create new genome
             Genome childGenome = new Genome(childWeights);
-            childGenome.FitnessScore = evaluate(childGenome, ctx);
+            childGenome.FitnessScore = evaluate(childGenome, ctx,dt);
 
             //childGenome.evaluateFitness();
             population[i] = childGenome;

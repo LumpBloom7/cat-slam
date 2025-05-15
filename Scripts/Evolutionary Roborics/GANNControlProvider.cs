@@ -39,10 +39,9 @@ public partial class GANNControlProvider : Node
 
     public override void _PhysicsProcess(double delta)
     {
-
-
         if (geneticAlgorithm is null || simulationProvider is null)
             return;
+
         var simulation = simulationProvider.createSimulationContext();
 
         //Run the Genetic Algorithm up to (50) times
@@ -50,10 +49,9 @@ public partial class GANNControlProvider : Node
         Genome? bestGenome = null;
         int generationsSinceLastImprovement = 0;
 
-        for (int i = 0; i < 50; ++i)
+        for (int i = 0; i < 1; ++i)
         {
-            geneticAlgorithm.Run(simulation);
-
+            geneticAlgorithm.Run(simulation, delta);
 
             if (geneticAlgorithm.bestGenome?.FitnessScore >= generationBestFitness)
             {

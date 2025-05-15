@@ -85,7 +85,6 @@ public partial class SimulationProvider : Node
         private readonly float sensorRange;
         private readonly float originalLeftVel, originalRightVel;
 
-
         public Vector3 Position { get; private set; }
         public float Rotation { get; private set; }
 
@@ -94,9 +93,9 @@ public partial class SimulationProvider : Node
 
         public float[] SensorValues { get; private set; }
 
-        public void Update(int leftInput, int rightInput)
+        public void Update(int leftInput, int rightInput, double dt)
         {
-            const float STEPSIZE = 0.01f;
+            float STEPSIZE = (float)0.1;
             // Compute acceleration amounts
             float leftAcc = 0;
             float rightAcc = 0;
@@ -124,16 +123,46 @@ public partial class SimulationProvider : Node
             float velocity = (LeftVel + RightVel) / 2;
             Vector3 movementVector = (Vector3.Forward * velocity).Rotated(new Vector3(0, 1, 0), Rotation);
 
-            Position += movementVector * STEPSIZE;
+            var newpos = Position + movementVector * STEPSIZE;
+
+            // Aggressive prevention of movement
+            float occMapHeight = occupancyMap.CellContents.GetLength(0);
+            float occMapWidth = occupancyMap.CellContents.GetLength(1);
+
+            float angleStep = 2 * MathF.PI / 12;
+
+            Vector3 line = Vector3.Forward * Radius * 1.5f;
+
+            for (int i = 0; i < 12; ++i)
+            {
+                float angleDiff = angleStep * i;
+                var target = Position + line.Rotated(new(0, 1, 0), angleDiff + Rotation);
+
+                var tmp = getIntersectingTiles(target, Position, 0.1f);
+
+                foreach ((CellLite cell, float _) in tmp)
+                {
+                    bool OOB = cell.Y < 0 || cell.Y >= occMapHeight || cell.X < 0 || cell.X >= occMapWidth;
+
+                    if (OOB)
+                        return;
+
+                    if (occupancyMap.CellContents[cell.Y, cell.X].OccupiedLikelihood >= 0.7)
+                        return;
+                }
+            }
+
+            Position = newpos;
         }
 
         public int ComputeReward()
         {
             float angleStep = 2 * MathF.PI / numSensor;
-
             Vector3 line = Vector3.Forward * sensorRange;
 
-            int rewardSum = 0;
+            float dist = originalPosition.DistanceTo(Position);
+
+            int rewardSum = (int)(dist * 500000);
 
             for (int i = 0; i < numSensor; ++i)
             {
@@ -144,7 +173,7 @@ public partial class SimulationProvider : Node
 
                 if (r < 0)
                 {
-                    rewardSum = -10000000;
+                    rewardSum = -1000000;
                     break;
                 }
 
@@ -163,71 +192,89 @@ public partial class SimulationProvider : Node
             SensorValues = [.. originalDistances];
         }
 
-        private int beamReward(Vector3 origin, Vector3 target, int index)
+        public IEnumerable<(CellLite cell, float prog)> getIntersectingTiles(Vector3 origin, Vector3 target, float precision = 0.01f)
         {
-            const float PRECISION = 0.05f;
-
-            Vector2 step = new Vector2(target.X - origin.X, target.Z - origin.Z) * PRECISION;
-
-            float lengthStep = step.Length();
-
+            Vector2 step = new Vector2(target.X - origin.X, target.Z - origin.Z) * precision;
             Vector2 halfMapSize = occupancyMap.MapSize / 2;
+
             Vector2 current = new Vector2(origin.X, origin.Z) + halfMapSize;
+            CellLite? lastCell = null;
+            float lastProg = 0;
 
-            CellLite cell = new CellLite { X = -5000, Y = -5000 };
-            int rewardCount = 0;
-
-            float length = 0;
-
-            float occMapHeight = occupancyMap.CellContents.GetLength(0);
-            float occMapWidth = occupancyMap.CellContents.GetLength(1);
-
-            for (float i = 0; i <= 1; i += PRECISION, length += lengthStep)
+            for (float i = 0f; i <= 1.1f; i += precision)
             {
                 CellLite nextCell = new()
                 {
                     X = (int)Math.Round(current.X / occupancyMap.CellSize.X),
                     Y = (int)Math.Round(current.Y / occupancyMap.CellSize.Y)
                 };
+                current += step;
 
-                bool OOB = nextCell.Y < 0 || nextCell.Y >= occMapHeight || nextCell.X < 0 || nextCell.X >= occMapWidth;
+                if (lastCell.HasValue && nextCell != lastCell)
+                    yield return (lastCell.Value, lastProg);
 
+                lastCell = nextCell;
+                lastProg += precision;
+            }
+
+            if (lastCell.HasValue)
+                yield return (lastCell.Value, lastProg);
+        }
+
+        private int beamReward(Vector3 origin, Vector3 target, int index)
+        {
+            var cells = getIntersectingTiles(origin, target);
+
+            float length = origin.DistanceTo(target);
+
+            int rewardCount = 0;
+
+            float occMapHeight = occupancyMap.CellContents.GetLength(0);
+            float occMapWidth = occupancyMap.CellContents.GetLength(1);
+
+            float furthest = 1;
+
+            foreach ((CellLite cell, float prog) in cells)
+            {
+                bool OOB = cell.Y < 0 || cell.Y >= occMapHeight || cell.X < 0 || cell.X >= occMapWidth;
+                furthest = prog;
+
+                // Don't incentivise OOB exploration
                 if (OOB)
                 {
-                    if (length < Radius * 1.5f)
-                        rewardCount = -100000;
+                    if (length * prog < Radius * 1.5f)
+                        rewardCount = -1000000;
 
                     break;
                 }
-                ref var actualCell = ref occupancyMap.CellContents[nextCell.Y, nextCell.X];
+
+                ref var actualCell = ref occupancyMap.CellContents[cell.Y, cell.X];
 
                 // Let's not give more info
                 if (actualCell.OccupiedLikelihood > 0.5f)
                 {
                     if (length <= Radius * 1.5f)
                     {
-                        rewardCount = -50000;
+                        rewardCount = -500000;
                         break;
                     }
+                    break;
                 }
 
-                current += step;
+                if (!actualCell.explored)
+                    rewardCount += 1000;
 
-                if (nextCell != cell)
-                {
-                    if (!actualCell.explored)
-                        rewardCount += 1;
-                }
-
-                cell = nextCell;
+                rewardCount += 10;
             }
 
-            SensorValues[index] = length;
+            SensorValues[index] = Math.Clamp(length * furthest, 0, sensorRange);
+
+            //rewardCount += (int)Math.Pow((int)SensorValues[index], 2) * 1000;
 
             return rewardCount;
         }
 
-        private readonly record struct CellLite(int X, int Y);
+        public readonly record struct CellLite(int X, int Y);
 
     }
 
