@@ -23,7 +23,7 @@ public partial class SimulatedLidar : RayCast3D
         base._Ready();
         AddChild(distanceLabel = new Label3D()
         {
-            Position = new Vector3(0, 0.055f, 0.3f),
+            Position = new Vector3(0, 0.055f, -0.3f),
             PixelSize = 0.001f,
             Billboard = BaseMaterial3D.BillboardModeEnum.Enabled,
             NoDepthTest = true,
