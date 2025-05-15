@@ -1,4 +1,4 @@
-[gd_scene load_steps=23 format=3 uid="uid://cg4dlisrpp3dm"]
+[gd_scene load_steps=24 format=3 uid="uid://cg4dlisrpp3dm"]
 
 [ext_resource type="Script" uid="uid://bmbtxts83u5tr" path="res://Scripts/RobotCharacter.cs" id="2_2dy0i"]
 [ext_resource type="PackedScene" uid="uid://dgqpwmfnga1gx" path="res://assets/marisa_fumo/scene.gltf" id="2_28gir"]
@@ -146,7 +146,9 @@ CellSize = Vector2(0.1, 0.1)
 
 [node name="ParticleFilterRepresentation" type="Node3D" parent="Digital representations"]
 script = ExtResource("15_i451r")
-Colour = Color(1, 0, 0.984314, 0)
+CellSize = Vector2(0.1, 0.1)
+Colour = Color(1, 0, 0.984314, 1)
+ShowPath = false
 
 [node name="MultiMeshInstance3D" type="MultiMeshInstance3D" parent="Digital representations/ParticleFilterRepresentation"]
 script = ExtResource("14_6eaws")

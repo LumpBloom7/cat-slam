@@ -5,7 +5,7 @@ public partial class DigitalRepresentation : Node3D
     public GhostRobot Ghost { get; private set; } = null!;
     public OccupancyMap OccupancyMap { get; private set; } = null!;
 
-    private RobotPath path = null!;
+    private RobotPath? path = null;
 
     [Export]
     public Vector2 MapSize { get; set; } = new Vector2(30, 30);
@@ -15,6 +15,9 @@ public partial class DigitalRepresentation : Node3D
 
     [Export]
     public Color Colour { get; set; } = Color.Color8(0, 255, 0);
+
+    [Export]
+    public bool ShowPath { get; set; } = true;
 
     public override void _Ready()
     {
@@ -26,6 +29,10 @@ public partial class DigitalRepresentation : Node3D
             CellSize = CellSize,
             CellColour = Colour
         });
+
+        if (!ShowPath)
+            return;
+
         AddChild(path = new RobotPath()
         {
             LineColour = Colour,
@@ -38,7 +45,7 @@ public partial class DigitalRepresentation : Node3D
         Ghost.GlobalPosition = vector3;
         Ghost.GlobalRotation = rotation;
 
-        path.OnPositionChanged(vector3);
+        path?.OnPositionChanged(vector3);
     }
 
     public void UpdateOccupancyMap(float distance, float angle, bool isHit)
